@@ -1,106 +1,113 @@
 <div align="center">
 
-<img src="icons/icon-512.png" width="128" alt="BLD Trainer icon">
+<img src="icons/icon-512.png" width="96" alt="">
 
 # BLD Trainer
 
-**A 3×3 blindfolded-solving practice tool: scramble, memorize, execute.**
+A practice tool for 3x3 blindfolded solving.
 
-It works out the letter-pair solution for your method and buffers, then checks every pair you type against the actual cube state.
+**[lehoffenberger.github.io/bld-trainer](https://lehoffenberger.github.io/bld-trainer/)**
 
-[**▶ Open the trainer**](https://lehoffenberger.github.io/bld-trainer/)
-
-![Installable PWA](https://img.shields.io/badge/PWA-installable-33507a?style=flat-square)
-![Works offline](https://img.shields.io/badge/offline-ready-177a3c?style=flat-square)
-![Zero dependencies](https://img.shields.io/badge/dependencies-zero-68686f?style=flat-square)
-![Lettering](https://img.shields.io/badge/lettering-Speffz-8d1f2b?style=flat-square)
-
-<br>
-
-<img src="screenshots/home.png" width="240" alt="Cube state and scramble">&nbsp;&nbsp;
-<img src="screenshots/memo.png" width="240" alt="Memo with live pair checking">&nbsp;&nbsp;
-<img src="screenshots/scramble-dark.png" width="240" alt="Scramble-from-solved walkthrough, dark mode">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="img/hero-dark.png">
+  <img src="img/hero-light.png" width="640" alt="A scrambled cube in the 3D and 2D views">
+</picture>
 
 </div>
 
----
+## Install
 
-## What it does
+It runs in the browser. You can also install it as an app, which then opens full screen and works offline.
 
-The trainer splits blindfolded solving into three practice branches, so you can drill each skill on its own:
-
-| Branch | What you practice |
+| Device | How |
 |---|---|
-| 🔀 **Scramble** | Scramble a solved cube using letter pairs, one algorithm at a time, with a diagram of what your cube should look like after each step. No move notation needed. |
-| 🧠 **Memorize** | Trace the scramble and type your pairs. Edges and corners each get a field from the start, and each pair is checked the moment you type it. Pairs can be hidden (you derive them) or shown (you memorize them). |
-| ⚡ **Execute** | Solve your physical cube from memory or sighted, timed or not, then step through the solution to review it. |
+| iPhone / iPad | Open the link in Safari → Share → Add to Home Screen |
+| Android | Open the link in Chrome → ⋮ → Install app |
+| Mac | Safari → File → Add to Dock, or the install icon in Chrome's address bar |
+| Windows / Linux | The install icon in the address bar of Chrome or Edge |
 
-## Highlights
+You don't need an account, and the app doesn't save any of your data. Updates install themselves: the new version shows up the second time you open the app after an update. To remove it, delete it like any other app.
 
-- **Checks against the real cube.** Your pairs are checked against the actual cube state, not one stored answer. Any helper that's part of *some* shortest solution is accepted, including breaking into a new cycle mid-trace. When a pair doesn't work, the hint says why: already solved, wrong sticker on the right piece, or costs extra pairs.
-- **Every diagram is a real cube.** Pieces are tracked as whole cubies, so every state shown is one you could actually hold, including parity.
-- **Your method, your buffers.** Choose a method per group, then change buffers and parity swaps freely. The whole solution recomputes.
-- **3D floating-sticker view** (default) or a flat 2D net, with optional Speffz letters on every sticker.
-- **Timers per group or one overall.** When you finish edges, the cursor jumps to corners and the corner timer takes over.
-- **Paste your own scramble**, or step back and forth through scramble history.
-- **Light and dark mode**, keyboard shortcuts (<kbd>←</kbd> <kbd>→</kbd> between buttons, <kbd>Enter</kbd> to advance), and a built-in guide with worked examples.
+## Guide
 
-## Methods
+### Three branches
 
-| Group | Method | Default buffer | Parity alg |
+- **Scramble**: scramble a solved cube using letter pairs.
+- **Memorize**: trace the scramble and type your pairs. Each pair is checked as you type it.
+- **Execute**: solve your cube, timed or not, then step through the solution.
+
+### Speffz lettering
+
+Each sticker gets a letter, A–X, going clockwise around each face in the order U, L, F, R, B, D. Corners and edges each have their own A–X.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="img/speffz-dark.png">
+  <img src="img/speffz-light.png" width="420" alt="Solved cube with every sticker's Speffz letter">
+</picture>
+
+### Buffers, helpers, and methods
+
+Your buffer is the piece you track. A helper is the piece a pair sends it to. Two shots make one pair, which is one algorithm.
+
+Old Pochmann corners, solving the pair PB:
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="img/pb-dark.png">
+  <img src="img/pb-light.png" width="700" alt="Buffer A holds P; after shooting P it holds B; after shooting B the corners are solved">
+</picture>
+
+The buffer (A) holds P. After you shoot P, it holds B. After you shoot B, the pair is done. The two edges swapped in the middle picture are a side effect of Old Pochmann's corner alg, and they swap back on the second shot.
+
+Each method's buffer, outlined in blue, with an example helper in gold:
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="img/corners-dark.png">
+  <img src="img/corners-light.png" width="520" alt="Corner buffers: Old Pochmann A, Orozco / EKA / 3-Style C">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="img/edges-dark.png">
+  <img src="img/edges-light.png" width="700" alt="Edge buffers: Old Pochmann B, M2 U, Orozco / EKA / 3-Style C">
+</picture>
+
+| Group | Method | Buffer | Example helper |
 |---|---|---|---|
-| Corners | Old Pochmann | UBL · **A** | R-perm |
-| Corners | Orozco / EKA / 3-Style | UFR · **C** | J-perm |
-| Edges | Old Pochmann | UR · **B** | follows corners |
-| Edges | M2 | DF · **U** | follows corners |
-| Edges | Orozco / EKA / 3-Style | UF · **C** | follows corners |
+| Corners | Old Pochmann | A (UBL) | P |
+| Corners | Orozco / EKA / 3-Style | C (UFR) | B |
+| Edges | Old Pochmann | B (UR) | D |
+| Edges | M2 | U (DF) | A |
+| Edges | Orozco / EKA / 3-Style | C (UF) | B |
 
-Parity is one algorithm that swaps two corners *and* two edges. It runs **last** in a solution, which puts it **first** when scrambling. Your corner method picks the default alg, and you can override it or build a custom swap.
+You can change buffers in Setup. The trainer accepts any helper that's part of a shortest solution, not just the one it would pick.
 
-## Put it on your phone
+### Parity
 
-It's a Progressive Web App, so it installs straight from the browser and then runs full screen and offline, with no app store and no account.
+Parity happens when an odd number of swaps solves the cube. A parity alg swaps two corners and two edges, and it goes last in a solution. Your corner method determines the default alg:
 
-**iPhone**: open the link in **Safari** → Share → **Add to Home Screen**
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="img/parity-dark.png">
+  <img src="img/parity-light.png" width="520" alt="R-perm and J-perm parity swaps">
+</picture>
 
-**Android**: open the link in **Chrome** → ⋮ → **Install app**
+| Corner method | Parity alg |
+|---|---|
+| Old Pochmann | R-perm (left) |
+| Orozco / EKA / 3-Style | J-perm (right) |
 
-<div align="center">
-<img src="screenshots/guide.png" width="560" alt="Built-in guide with the Speffz lettering diagram">
-<br><sub>The built-in guide, with every sticker's Speffz letter on a 3D cube</sub>
-</div>
+The full guide is in the app under **Guide**.
 
 ## Run it locally
 
-No build step and no dependencies: the whole app is one HTML file.
+The whole app is one HTML file.
 
 ```bash
 git clone https://github.com/lehoffenberger/bld-trainer.git
 cd bld-trainer
-python3 -m http.server 8000     # then open http://localhost:8000
+python3 -m http.server 8000
 ```
 
-Opening `index.html` directly works too. The service worker (offline mode) only runs when the files are served over `http://localhost` or HTTPS.
-
-## Project layout
-
-```
-index.html            the entire app: cube model, solver, validator, UI, guide
-manifest.webmanifest  install metadata (name, icons, colors)
-sw.js                 offline cache; updates land on the next launch
-icons/                app icons (standard, maskable, Apple touch)
-screenshots/          images for this README
-```
+Then open `localhost:8000`.
 
 ## Credits
 
-- **Cube model**: cubie representation and facelet indexing follow [cube.js](https://github.com/ldez/cubejs) (MIT License, © 2013-2017 Petri Lehtinen, © 2018 Ludovic Fernandez; the full notice is in the app's guide) and [Herbert Kociemba](http://kociemba.org/cube.htm)'s permutation-and-orientation model.
-- **Lettering**: [Speffz](https://www.speedsolving.com/wiki/index.php/Speffz), by Ville Seppänen and Rob Holt.
-- **Methods**: Old Pochmann and M2 by Stefan Pochmann; 3-Style (Beyer–Hardwick) by Chris Hardwick and Daniel Beyer; Orozco by Gabriel Alejandro Orozco Casillas; Eka.
-- **Tutorials**: [J Perm's BLD guide](https://www.jperm.net/bld) is a great place to learn the methods.
-- **Typefaces**: Instrument Sans and IBM Plex Mono (SIL Open Font License), via Google Fonts.
-
-<div align="center">
-<br>
-<sub>Built by <a href="https://github.com/lehoffenberger">@lehoffenberger</a> for blindfolded practice.</sub>
-</div>
+The cube model follows [cube.js](https://github.com/ldez/cubejs) (MIT) and [Herbert Kociemba](http://kociemba.org/cube.htm). [Speffz](https://www.speedsolving.com/wiki/index.php/Speffz) lettering is by Ville Seppänen and Rob Holt. Old Pochmann and M2 are by Stefan Pochmann, and 3-Style (Beyer–Hardwick) is by Chris Hardwick and Daniel Beyer. Orozco is by Gabriel Alejandro Orozco Casillas. To learn the methods, see [J Perm's BLD tutorials](https://www.jperm.net/bld).
