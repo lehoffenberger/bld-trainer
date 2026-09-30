@@ -1,0 +1,1679 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0c0e" media="(prefers-color-scheme: dark)">
+<meta name="description" content="3x3 blindfold practice: scramble from letter pairs, memo, and execution with live checking.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BLD Trainer">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Rubik's Cube 3x3 Blindfold Practice Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f6f3; --surface:#ffffff; --surface-2:#edede9;
+    --border:#dcdcd6; --border-strong:#c3c3bb;
+    --text:#17171a; --text-dim:#68686f;
+    --accent:#33507a; --accent-ink:#ffffff;
+    --good:#177a3c; --good-bg:#e4f5e8;
+    --bad:#b3261e; --bad-bg:#fbe9e7;
+    --warn:#8a6100; --warn-bg:#fbf1dd;
+    --twist:#5b3f93; --twist-bg:#efe9fa;
+    --shadow: 0 1px 2px rgba(20,20,20,.05), 0 6px 20px -8px rgba(20,20,20,.15);
+    --st-U:#eceae1; --st-D:#f7ec12; --st-F:#18e06d;
+    --st-B:#1d4684; --st-R:#8d1f2b; --st-L:#ff8c05;
+    --sticker-border: rgba(0,0,0,.30);
+    --ink-dark: rgba(0,0,0,.66); --ink-light: rgba(255,255,255,.88);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0c0c0e; --surface:#18181b; --surface-2:#212125;
+      --border:#302f34; --border-strong:#45444b;
+      --text:#eeeeef; --text-dim:#9d9da4;
+      --accent:#8fb0e6; --accent-ink:#0c0c0e;
+      --good:#57d17e; --good-bg:#123420;
+      --bad:#ff8a80; --bad-bg:#3a1613;
+      --warn:#e0b45c; --warn-bg:#332608;
+      --twist:#c0a6f0; --twist-bg:#241a3a;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -10px rgba(0,0,0,.6);
+      --st-U:#dcdad1; --st-D:#eee01a; --st-F:#17d267;
+      --st-B:#1f4b8d; --st-R:#8f2029; --st-L:#fa8506;
+      --sticker-border: rgba(255,255,255,.20);
+      --ink-dark: rgba(0,0,0,.70); --ink-light: rgba(255,255,255,.90);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c0c0e; --surface:#18181b; --surface-2:#212125;
+    --border:#302f34; --border-strong:#45444b;
+    --text:#eeeeef; --text-dim:#9d9da4;
+    --accent:#8fb0e6; --accent-ink:#0c0c0e;
+    --good:#57d17e; --good-bg:#123420;
+    --bad:#ff8a80; --bad-bg:#3a1613;
+    --warn:#e0b45c; --warn-bg:#332608;
+    --twist:#c0a6f0; --twist-bg:#241a3a;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -10px rgba(0,0,0,.6);
+    --st-U:#dcdad1; --st-D:#eee01a; --st-F:#17d267;
+    --st-B:#1f4b8d; --st-R:#8f2029; --st-L:#fa8506;
+    --sticker-border: rgba(255,255,255,.20);
+    --ink-dark: rgba(0,0,0,.70); --ink-light: rgba(255,255,255,.90);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:"Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+    padding-inline:20px; padding-block:26px 60px;
+    max-width:1200px; margin-inline:auto;
+  }
+  h1,h2,h3{ text-wrap:balance; font-weight:600; margin:0; }
+  h3{ font-size:1.05rem; }
+  .mono{ font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric:tabular-nums; }
+
+  header.top{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
+  header.top h1{ font-size:1.45rem; letter-spacing:-.015em; line-height:1.2; }
+  header.top .tag{ color:var(--text-dim); font-size:.85rem; }
+  .phase-pill{
+    display:inline-flex; align-items:center; gap:6px; font-size:.7rem;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim);
+    border:1px solid var(--border); border-radius:100px; padding:3px 10px;
+  }
+
+  .panel{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow); }
+  .stack{ display:flex; flex-direction:column; gap:14px; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+  .settings-cols{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:22px; }
+  .setup-head{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .setup-summary{ flex:1; min-width:150px; font-size:.79rem; color:var(--text-dim); line-height:1.45; }
+  #setupBody[hidden]{ display:none; }
+  button.disclosure{ display:inline-flex; align-items:center; gap:7px; }
+  button.disclosure .chev{ display:inline-block; transition:transform .15s ease; }
+  button.disclosure[aria-expanded="true"] .chev{ transform:rotate(90deg); }
+  @media (prefers-reduced-motion: reduce){ button.disclosure .chev{ transition:none; } }
+  .settings-section{ display:flex; flex-direction:column; gap:9px; }
+  .sec-title{ text-transform:uppercase; letter-spacing:.09em; font-size:.66rem; color:var(--text-dim); font-weight:600; }
+  label.field{ display:flex; flex-direction:column; gap:4px; font-size:.78rem; color:var(--text-dim); }
+  label.field[hidden]{ display:none; }
+  .pair-selects{ display:flex; align-items:center; gap:5px; }
+  .pair-selects select{ min-width:0; }
+  label.field span.lbl{ text-transform:uppercase; letter-spacing:.06em; font-size:.66rem; }
+  select, input[type=text]{
+    background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:8px 10px; font-size:.88rem; font-family:inherit; width:100%;
+  }
+  select:focus, input:focus, button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .check{ display:flex; align-items:center; gap:6px; font-size:.82rem; color:var(--text-dim); }
+
+  button{
+    font-family:inherit; font-size:.86rem; font-weight:600; border-radius:9px;
+    border:1px solid var(--border); background:var(--surface-2); color:var(--text);
+    padding:9px 15px; cursor:pointer;
+  }
+  button:hover{ filter:brightness(1.05); }
+  button.primary{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+  button.ghost{ background:transparent; }
+  button.big{ padding:16px 18px; font-size:1rem; flex:1; min-width:120px; text-align:center; }
+  button.big .sub{ display:block; font-weight:400; font-size:.76rem; opacity:.75; margin-top:3px; }
+  button:disabled{ opacity:.4; cursor:not-allowed; }
+
+  main.layout{ display:grid; grid-template-columns:minmax(300px,420px) 1fr; gap:18px; margin-top:16px; align-items:start; }
+  @media (max-width:880px){ main.layout{ grid-template-columns:1fr; } }
+
+  .scramble-line{ font-size:1rem; letter-spacing:.02em; word-break:break-word; line-height:1.6; }
+  .hist-pos{ font-size:.72rem; color:var(--text-dim); }
+  .net-wrap{ display:flex; justify-content:center; padding:4px 0 2px; }
+  svg.net{ width:100%; max-width:380px; height:auto; }
+  .sticker{ stroke:var(--sticker-border); stroke-width:1.2; }
+  .sticker-letter{ font-family:"IBM Plex Mono",monospace; font-size:9px; font-weight:700; pointer-events:none; }
+
+  .step-controls{ display:flex; align-items:center; gap:10px; justify-content:center; margin-top:8px; }
+  .step-controls[hidden]{ display:none; }
+  .step-label{ font-size:.78rem; color:var(--text-dim); min-width:150px; text-align:center; }
+
+  .grp{ font-size:.68rem; text-transform:uppercase; letter-spacing:.09em; color:var(--text-dim); font-weight:600; margin-top:4px; }
+  .pairs-display{ display:flex; flex-wrap:wrap; gap:7px; margin-top:6px; align-items:center; }
+  .pair-chip{
+    font-family:"IBM Plex Mono",monospace; font-size:1rem; font-weight:600; letter-spacing:.04em;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:4px 9px;
+  }
+  .pair-chip.parity{ border-color:var(--warn); background:var(--warn-bg); color:var(--warn); }
+  .pair-chip.twist{ border-color:var(--twist); background:var(--twist-bg); color:var(--twist); }
+  .pair-chip.cur{ border-color:var(--accent); background:var(--accent); color:var(--accent-ink); }
+  .pair-chip.done{ opacity:.42; }
+  .pair-chip.good{ border-color:var(--good); background:var(--good-bg); color:var(--good); }
+  .pair-chip.bad{ border-color:var(--bad); background:var(--bad-bg); color:var(--bad); }
+  .pair-chip.pending{ opacity:.45; }
+  .chip-tag{ font-family:"Instrument Sans",sans-serif; font-size:.6rem; text-transform:uppercase; letter-spacing:.07em; opacity:.8; margin-left:5px; }
+
+  .legend{ font-size:.76rem; color:var(--text-dim); line-height:1.5; }
+  .hint{ font-size:.82rem; color:var(--text-dim); line-height:1.5; }
+  .status{ font-size:.84rem; margin-top:7px; line-height:1.5; }
+  .status.good{ color:var(--good); } .status.bad{ color:var(--bad); } .status.dim{ color:var(--text-dim); }
+  .entry-input{ margin-top:5px; }
+  .status-row{ display:flex; align-items:flex-start; gap:10px; justify-content:space-between; }
+  .status-row .status{ flex:1; }
+  button.hint-btn{ padding:4px 10px; font-size:.75rem; font-weight:500; flex:none; margin-top:5px; }
+  .kbd-hint{ font-size:.74rem; color:var(--text-dim); }
+  kbd{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; border:1px solid var(--border-strong); border-bottom-width:2px; border-radius:4px; padding:1px 5px; }
+
+  .timers{ display:flex; gap:22px; flex-wrap:wrap; align-items:flex-end; }
+  .timer-block .tl{ font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); }
+  .timer{ font-size:1.7rem; font-weight:600; line-height:1.15; }
+
+  .divider{ height:1px; background:var(--border); margin:12px 0; border:none; }
+  details.disclose summary{ cursor:pointer; font-size:.84rem; color:var(--text-dim); }
+  details.disclose summary:hover{ color:var(--text); }
+  .blind-note{ border:1px dashed var(--border-strong); border-radius:10px; padding:14px; font-size:.86rem; color:var(--text-dim); text-align:center; }
+  footer{ margin-top:32px; font-size:.75rem; color:var(--text-dim); line-height:1.6; }
+
+  #docsOverlay{ position:fixed; inset:0; z-index:60; background:var(--bg);
+    overflow-y:auto; padding-inline:20px; padding-block:26px 90px; }
+  #docsOverlay[hidden]{ display:none; }
+  .docs{ max-width:740px; margin-inline:auto; }
+  .docs-top{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  .docs h2{ font-size:1.5rem; letter-spacing:-.01em; }
+  .docs h3{ font-size:1rem; margin-top:34px; padding-top:16px; border-top:1px solid var(--border); }
+  .docs p{ font-size:.92rem; line-height:1.68; margin:11px 0; }
+  .docs ul{ padding-left:19px; margin:11px 0; }
+  .docs li{ font-size:.92rem; line-height:1.62; margin:5px 0; }
+  .docs .lead{ color:var(--text-dim); font-size:1rem; line-height:1.6; }
+  .docs .tbl{ overflow-x:auto; margin:13px 0; }
+  .docs table{ border-collapse:collapse; width:100%; font-size:.84rem; }
+  .docs th,.docs td{ text-align:left; padding:6px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .docs th{ font-size:.66rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-dim); font-weight:600; }
+  .docs code, .docs .k{ font-family:"IBM Plex Mono",monospace; font-size:.86em;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:4px; padding:1px 5px; }
+  .docs a{ color:var(--accent); text-underline-offset:2px; }
+  .docs .lic{ font-family:"IBM Plex Mono",monospace; font-size:.76rem; line-height:1.6;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; color:var(--text-dim); }
+  .docs .note{ border-left:3px solid var(--border-strong); padding:2px 0 2px 14px; color:var(--text-dim); font-size:.88rem; margin:14px 0; }
+  .toc{ display:flex; flex-wrap:wrap; gap:6px; margin:16px 0 4px; }
+  .toc button{ font-size:.74rem; font-weight:500; padding:5px 10px; }
+  .docs details.disclose{ margin:10px 0; }
+  .docs details.disclose summary{ font-size:.8rem; }
+  .diagram-row{ display:flex; flex-wrap:wrap; gap:18px; margin:12px 0 6px; }
+  .diagram{ display:flex; flex-direction:column; align-items:center; gap:7px; width:168px; }
+  .diagram svg{ width:150px; height:auto; }
+  .diagram .cap{ font-size:.74rem; color:var(--text-dim); text-align:center; line-height:1.4; }
+  .diagram .cap b{ color:var(--text); }
+  .diagram-big{ width:340px; }
+  .diagram-big svg{ width:340px; }
+  .swatch{ display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:4px; vertical-align:middle; }
+  @supports (padding: env(safe-area-inset-top)){
+    body{ padding-top:max(26px, env(safe-area-inset-top)); padding-bottom:max(60px, env(safe-area-inset-bottom));
+          padding-left:max(20px, env(safe-area-inset-left)); padding-right:max(20px, env(safe-area-inset-right)); }
+  }
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div>
+    <h1>Rubik's Cube 3x3 Blindfold Practice Tool</h1>
+    <div class="tag">Guided Scrambling, Memorization, and Execution Trainer</div>
+  </div>
+  <div class="row" style="gap:8px;">
+    <button id="infoBtn">Guide</button>
+    <span class="phase-pill" id="phasePill">setup</span>
+  </div>
+</header>
+
+<div id="docsOverlay" hidden><div class="docs" id="docsBody"></div></div>
+
+<section class="panel stack" id="setupPanel">
+  <div class="setup-head">
+    <button class="disclosure" id="setupToggle" aria-expanded="false"><span class="chev">&#9656;</span> Setup</button>
+    <div class="setup-summary" id="setupSummary"></div>
+  </div>
+  <div class="stack" id="setupBody" hidden>
+    <hr class="divider">
+    <div class="settings-section">
+      <div class="sec-title">Scramble</div>
+      <div class="row">
+        <input type="text" id="customScrambleInput" placeholder="Paste a scramble, e.g. R U R' F2 D L' B U2…" style="flex:1;min-width:200px;width:auto;">
+        <button id="applyScrambleBtn">Use this scramble</button>
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="settings-cols">
+<div class="settings-section">
+      <div class="sec-title">Corners</div>
+      <label class="field"><span class="lbl">Method</span><select id="cornerMethodSel"></select></label>
+      <label class="field"><span class="lbl">Buffer</span><select id="cornerBufSel"></select></label>
+      <label class="field"><span class="lbl">Parity swap</span>
+        <span class="pair-selects"><select id="cornerP1Sel"></select><b>&#8596;</b><select id="cornerP2Sel"></select></span>
+      </label>
+      <div class="legend" id="cornerMethodNote"></div>
+    </div>
+    <div class="settings-section">
+      <div class="sec-title">Edges</div>
+      <label class="field"><span class="lbl">Method</span><select id="edgeMethodSel"></select></label>
+      <label class="field"><span class="lbl">Buffer</span><select id="edgeBufSel"></select></label>
+      <label class="field"><span class="lbl">Parity swap</span>
+        <span class="pair-selects"><select id="edgeP1Sel"></select><b>&#8596;</b><select id="edgeP2Sel"></select></span>
+      </label>
+      <div class="legend" id="edgeMethodNote"></div>
+    </div>
+        </div>
+    <hr class="divider">
+    <div class="settings-cols">
+<div class="settings-section">
+      <div class="sec-title">Memo</div>
+      <label class="field"><span class="lbl">Pairs</span>
+        <select id="memoShowSel"><option value="hidden">Hidden — derive them</option><option value="shown">Shown — memorize them</option></select>
+      </label>
+      <label class="field"><span class="lbl">Memo timer</span>
+        <select id="memoStageSel"><option value="split">Timed per group</option><option value="together">One timer</option></select>
+      </label>
+      <label class="check"><input type="checkbox" id="memoTimed"> Timed</label>
+    </div>
+    <div class="settings-section">
+      <div class="sec-title">Execution &amp; view</div>
+      <label class="field"><span class="lbl">Exec pairs</span>
+        <select id="execShowSel"><option value="hidden">Hidden — from memory</option><option value="shown">Shown — sighted</option></select>
+      </label>
+      <label class="field"><span class="lbl">Pair order</span>
+        <select id="orderSel"><option value="edges">Edges, then corners</option><option value="corners">Corners, then edges</option></select>
+      </label>
+      <label class="field"><span class="lbl">Parity alg</span><select id="parityAlgSel"></select></label>
+      <label class="field"><span class="lbl">Visualization</span>
+        <select id="vizSel"><option value="net">2D net</option><option value="iso" selected>3D floating stickers</option></select>
+      </label>
+      <label class="check"><input type="checkbox" id="execTimed"> Exec timed</label>
+      <label class="check"><input type="checkbox" id="letterToggle"> Speffz letters on diagram</label>
+    </div>
+      </div>
+  </div>
+</section>
+
+<main class="layout">
+  <div class="stack">
+    <section class="panel stack">
+      <h3 id="vizTitle">Cube state</h3>
+      <div class="net-wrap" id="netWrap"></div>
+      <div class="step-controls" id="stepControls" hidden>
+        <button id="stepPrev">◀</button>
+        <span class="step-label mono" id="stepLabel">0 / 0</span>
+        <button id="stepNext">▶</button>
+      </div>
+    </section>
+    <section class="panel stack">
+      <div class="row" style="justify-content:space-between;align-items:baseline;">
+        <h3>Scramble</h3>
+        <span class="hist-pos mono" id="histPos"></span>
+      </div>
+      <div class="scramble-line mono" id="scrambleLine">—</div>
+      <div class="row">
+        <button class="primary" id="newScrambleBtn">New scramble</button>
+        <button id="prevScrambleBtn" title="Go back to the previous scramble">◀ Last</button>
+        <button id="nextScrambleBtn" title="Go forward again">Next ▶</button>
+        <button class="ghost" id="copyScrambleBtn">Copy</button>
+      </div>
+    </section>
+  </div>
+  <div class="stack"><section class="panel stack" id="modePanel"></section></div>
+</main>
+
+<footer>
+  Pieces are tracked as whole cubies, so every state shown is a cube you could actually hold.
+  <span class="kbd-hint">Keyboard: <kbd>←</kbd> <kbd>→</kbd> move between buttons, <kbd>Enter</kbd> advances the scramble walkthrough.</span>
+</footer>
+
+<script>
+/* =========================================================================
+   CUBE ENGINE
+   ========================================================================= */
+const CORNERS = ['URF','UFL','ULB','UBR','DFR','DLF','DBL','DRB'];
+const EDGES   = ['UR','UF','UL','UB','DR','DF','DL','DB','FR','FL','BL','BR'];
+const Ci = Object.fromEntries(CORNERS.map((c,i)=>[c,i]));
+const Ei = Object.fromEntries(EDGES.map((e,i)=>[e,i]));
+const cornerFaceStickers = {
+  URF:['U','R','F'], UFL:['U','F','L'], ULB:['U','L','B'], UBR:['U','B','R'],
+  DFR:['D','F','R'], DLF:['D','L','F'], DBL:['D','B','L'], DRB:['D','R','B']
+};
+const edgeFaceStickers = {
+  UR:['U','R'], UF:['U','F'], UL:['U','L'], UB:['U','B'],
+  DR:['D','R'], DF:['D','F'], DL:['D','L'], DB:['D','B'],
+  FR:['F','R'], FL:['F','L'], BL:['B','L'], BR:['B','R']
+};
+const MOVES = {
+  U:{cp:['UBR','URF','UFL','ULB','DFR','DLF','DBL','DRB'],co:[0,0,0,0,0,0,0,0],
+     ep:['UB','UR','UF','UL','DR','DF','DL','DB','FR','FL','BL','BR'],eo:[0,0,0,0,0,0,0,0,0,0,0,0]},
+  R:{cp:['DFR','UFL','ULB','URF','DRB','DLF','DBL','UBR'],co:[2,0,0,1,1,0,0,2],
+     ep:['FR','UF','UL','UB','BR','DF','DL','DB','DR','FL','BL','UR'],eo:[0,0,0,0,0,0,0,0,0,0,0,0]},
+  F:{cp:['UFL','DLF','ULB','UBR','URF','DFR','DBL','DRB'],co:[1,2,0,0,2,1,0,0],
+     ep:['UR','FL','UL','UB','DR','FR','DL','DB','UF','DF','BL','BR'],eo:[0,1,0,0,0,1,0,0,1,1,0,0]},
+  D:{cp:['URF','UFL','ULB','UBR','DLF','DBL','DRB','DFR'],co:[0,0,0,0,0,0,0,0],
+     ep:['UR','UF','UL','UB','DF','DL','DB','DR','FR','FL','BL','BR'],eo:[0,0,0,0,0,0,0,0,0,0,0,0]},
+  L:{cp:['URF','ULB','DBL','UBR','DFR','UFL','DLF','DRB'],co:[0,1,2,0,0,2,1,0],
+     ep:['UR','UF','BL','UB','DR','DF','FL','DB','FR','UL','DL','BR'],eo:[0,0,0,0,0,0,0,0,0,0,0,0]},
+  B:{cp:['URF','UFL','UBR','DRB','DFR','DLF','ULB','DBL'],co:[0,0,1,2,0,0,2,1],
+     ep:['UR','UF','UL','BR','DR','DF','DL','BL','FR','FL','UB','DB'],eo:[0,0,0,1,0,0,0,1,0,0,1,1]}
+};
+function identityCube(){ return { cp:[...CORNERS], co:CORNERS.map(()=>0), ep:[...EDGES], eo:EDGES.map(()=>0) }; }
+function applyMoveOnce(s, face){
+  const m = MOVES[face];
+  const nCp=new Array(8), nCo=new Array(8);
+  for (let to=0; to<8; to++){ const f=Ci[m.cp[to]]; nCp[to]=s.cp[f]; nCo[to]=(s.co[f]+m.co[to])%3; }
+  const nEp=new Array(12), nEo=new Array(12);
+  for (let to=0; to<12; to++){ const f=Ei[m.ep[to]]; nEp[to]=s.ep[f]; nEo[to]=(s.eo[f]+m.eo[to])%2; }
+  return { cp:nCp, co:nCo, ep:nEp, eo:nEo };
+}
+function applyMove(s, mv){
+  const face = mv[0];
+  let n = 1; if (mv.includes('2')) n = 2; if (mv.includes("'")) n = 3;
+  for (let i=0;i<n;i++) s = applyMoveOnce(s, face);
+  return s;
+}
+function applyAlg(s, alg){
+  for (const mv of alg.trim().split(/\s+/).filter(Boolean)) if (MOVES[mv[0]]) s = applyMove(s, mv);
+  return s;
+}
+function randomScramble(len=20){
+  const faces=['U','R','F','D','L','B'];
+  const axis={U:'UD',D:'UD',L:'LR',R:'LR',F:'FB',B:'FB'};
+  const mods=['','2',"'"];
+  const seq=[]; let lf=null,la=null;
+  while (seq.length<len){
+    const f = faces[Math.floor(Math.random()*6)];
+    if (f===lf || axis[f]===la) continue;
+    seq.push(f+mods[Math.floor(Math.random()*3)]);
+    lf=f; la=axis[f];
+  }
+  return seq.join(' ');
+}
+function _U(x){return x-1;} function _R(x){return _U(9)+x;} function _F(x){return _R(9)+x;}
+function _D(x){return _F(9)+x;} function _L(x){return _D(9)+x;} function _B(x){return _L(9)+x;}
+const cornerFacelet = {
+  URF:[_U(9),_R(1),_F(3)], UFL:[_U(7),_F(1),_L(3)], ULB:[_U(1),_L(1),_B(3)], UBR:[_U(3),_B(1),_R(3)],
+  DFR:[_D(3),_F(9),_R(7)], DLF:[_D(1),_L(9),_F(7)], DBL:[_D(7),_B(9),_L(7)], DRB:[_D(9),_R(9),_B(7)]
+};
+const edgeFacelet = {
+  UR:[_U(6),_R(2)], UF:[_U(8),_F(2)], UL:[_U(4),_L(2)], UB:[_U(2),_B(2)],
+  DR:[_D(6),_R(8)], DF:[_D(2),_F(8)], DL:[_D(4),_L(8)], DB:[_D(8),_B(8)],
+  FR:[_F(6),_R(4)], FL:[_F(4),_L(6)], BL:[_B(6),_L(4)], BR:[_B(4),_R(6)]
+};
+const centerFacelet = [_U(5),_R(5),_F(5),_D(5),_L(5),_B(5)];
+const FACE_ORDER = ['U','R','F','D','L','B'];
+
+/* =========================================================================
+   SPEFFZ
+   ========================================================================= */
+const cornerCoord = {
+  URF:[1,1,1], UFL:[-1,1,1], ULB:[-1,1,-1], UBR:[1,1,-1],
+  DFR:[1,-1,1], DLF:[-1,-1,1], DBL:[-1,-1,-1], DRB:[1,-1,-1]
+};
+const edgeCoord = {
+  UR:[1,1,0], UF:[0,1,1], UL:[-1,1,0], UB:[0,1,-1],
+  DR:[1,-1,0], DF:[0,-1,1], DL:[-1,-1,0], DB:[0,-1,-1],
+  FR:[1,0,1], FL:[-1,0,1], BL:[-1,0,-1], BR:[1,0,-1]
+};
+const FACE_DEF = {
+  U:{normal:[0,1,0], up:[0,0,-1]}, D:{normal:[0,-1,0], up:[0,0,1]},
+  F:{normal:[0,0,1], up:[0,1,0]}, B:{normal:[0,0,-1], up:[0,1,0]},
+  R:{normal:[1,0,0], up:[0,1,0]}, L:{normal:[-1,0,0], up:[0,1,0]}
+};
+function cross(a,b){return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+function getAngle(f,c){ const {normal,up}=FACE_DEF[f]; const r=cross(up,normal); return Math.atan2(dot(c,r),dot(c,up)); }
+function onFace(c,f){ return dot(c, FACE_DEF[f].normal) === 1; }
+function cwFrom(face, map, start){
+  const items = Object.keys(map).filter(p=>onFace(map[p], face));
+  items.sort((a,b)=>getAngle(face,map[a])-getAngle(face,map[b]));
+  const i = items.indexOf(start);
+  return items.slice(i).concat(items.slice(0,i));
+}
+const cornerStart = {U:'ULB', L:'ULB', F:'UFL', R:'URF', B:'UBR', D:'DLF'};
+let _ci=0, _ei=0;
+const cornerLetters={}, edgeLetters={};
+for (const face of ['U','L','F','R','B','D']){
+  const merged = {...cornerCoord, ...edgeCoord};
+  const eStart = cwFrom(face, merged, cornerStart[face])[1];
+  for (const c of cwFrom(face, cornerCoord, cornerStart[face])) (cornerLetters[c]=cornerLetters[c]||{})[face] = String.fromCharCode(65+_ci++);
+  for (const e of cwFrom(face, edgeCoord, eStart)) (edgeLetters[e]=edgeLetters[e]||{})[face] = String.fromCharCode(65+_ei++);
+}
+const cornerLetterToSlot={}, edgeLetterToSlot={};
+for (const p of CORNERS) for (const f of cornerFaceStickers[p]) cornerLetterToSlot[cornerLetters[p][f]]=[p,f];
+for (const p of EDGES) for (const f of edgeFaceStickers[p]) edgeLetterToSlot[edgeLetters[p][f]]=[p,f];
+const ALL_CORNER_LETTERS = Object.keys(cornerLetterToSlot).sort();
+const ALL_EDGE_LETTERS = Object.keys(edgeLetterToSlot).sort();
+
+/* =========================================================================
+   PIECE TRACKING
+   ========================================================================= */
+const GROUPS = {
+  corner:{ positions:CORNERS, faces:cornerFaceStickers, letters:cornerLetters,
+           toSlot:cornerLetterToSlot, all:ALL_CORNER_LETTERS, n:3, name:'Corners' },
+  edge:  { positions:EDGES, faces:edgeFaceStickers, letters:edgeLetters,
+           toSlot:edgeLetterToSlot, all:ALL_EDGE_LETTERS, n:2, name:'Edges' }
+};
+const slotLetter = (g,pos,j) => g.letters[pos][g.faces[pos][j]];
+const refLetter  = (g,pos) => slotLetter(g,pos,0);
+const pieceSlots = (g,pos) => g.faces[pos].map(f => g.letters[pos][f]);
+
+function shootTarget(occ, g, bufPos, T){
+  const [P, f] = g.toSlot[T];
+  const n = g.n, k = g.faces[P].indexOf(f);
+  if (P === bufPos){
+    const old = [];
+    for (let j=0;j<n;j++) old.push(occ[slotLetter(g,bufPos,j)]);
+    for (let j=0;j<n;j++) occ[slotLetter(g,bufPos,(j+k)%n)] = old[j];
+  } else {
+    for (let j=0;j<n;j++){
+      const a = slotLetter(g,bufPos,j), b = slotLetter(g,P,(k+j)%n);
+      const t = occ[a]; occ[a] = occ[b]; occ[b] = t;
+    }
+  }
+}
+/* swap two whole cubies without twisting either — a PLL-style 2-swap */
+function swapPieces(occ, g, posA, posB){
+  for (let j=0;j<g.n;j++){
+    const a = slotLetter(g,posA,j), b = slotLetter(g,posB,j);
+    const t = occ[a]; occ[a] = occ[b]; occ[b] = t;
+  }
+}
+function inverseTarget(g, bufPos, T){
+  const [P, f] = g.toSlot[T];
+  if (P !== bufPos) return T;
+  const k = g.faces[P].indexOf(f);
+  return slotLetter(g, bufPos, (g.n - k) % g.n);
+}
+const isSolvedGrid = (occ,g) => g.all.every(L => occ[L] === L);
+
+/* =========================================================================
+   METHODS — behaviour differs per method, per group
+   ========================================================================= */
+/* named parity algs — the pieces they swap, in Speffz terms */
+const PARITY_ALGS = {
+  rperm:  { name:'R-perm',  corner:['URF','UBR'], edge:['UB','UL'] },
+  jperm:  { name:'J-perm',  corner:['URF','UBR'], edge:['UF','UR'] },
+  custom: { name:'Custom' }
+};
+const METHODS = {
+  corner:{
+    op:      { name:'Old Pochmann', buffer:'ULB', parityAlg:'rperm' },
+    style3:  { name:'Orozco / EKA / 3-Style', buffer:'URF', parityAlg:'jperm' },
+    custom:  { name:'Custom', buffer:'ULB', parityAlg:'jperm' }
+  },
+  edge:{
+    op:      { name:'Old Pochmann', buffer:'UR' },
+    m2:      { name:'M2', buffer:'DF' },
+    style3:  { name:'Orozco / EKA / 3-Style', buffer:'UF' },
+    custom:  { name:'Custom', buffer:'UF' }
+  }
+};
+
+/* The greedy buffer walk. `goal` is the state we're walking TO — normally
+   solved, but when the scramble has parity it's "solved except the parity
+   alg's four pieces", so the parity alg finishes the job at the very end. */
+function identityGrid(kind){
+  const g = {}; GROUPS[kind].all.forEach(L => g[L] = L); return g;
+}
+function walk(occ, g, bufPos, goal){
+  const ref = refLetter(g, bufPos);
+  const own = new Set(pieceSlots(g, bufPos));
+  const goalInv = {};
+  for (const L of g.all) goalInv[goal[L]] = L;
+  const solved = () => g.all.every(L => occ[L] === goal[L]);
+  const targets = [];
+  let guard = 0, stuckTwist = null;
+  while (!solved() && guard++ < 300){
+    let T;
+    if (occ[ref] === goal[ref]){
+      T = g.all.find(L => occ[L] !== goal[L] && !own.has(L));
+      if (T === undefined) break;
+    } else {
+      T = goalInv[occ[ref]];
+      // a lone twist isn't a legal cube operation, so never shoot our own
+      // buffer sticker — break in elsewhere instead
+      if (own.has(T)){
+        const alt = g.all.find(L => occ[L] !== goal[L] && !own.has(L));
+        if (alt === undefined){ stuckTwist = T; break; }
+        T = alt;
+      }
+    }
+    targets.push(T);
+    shootTarget(occ, g, bufPos, T);
+  }
+  return { targets, stuckTwist };
+}
+
+/* The fewest shots that can still finish this group from `occ`. Exact (checked against
+   brute-force search): the buffer's own cycle costs its length - 1, every other cycle costs
+   its length + 1 (break in, then close), and every piece twisted/flipped in place costs 2.
+   Orientation otherwise rides along with the buffer for free, which is why more than one
+   sticker, or more than one route, can be equally optimal. */
+function minShots(occ, g, bufPos, goal){
+  const goalInv = {}; for (const L of g.all) goalInv[goal[L]] = L;
+  const dest = {}, ori = {};
+  for (const pos of g.positions){
+    const [dp, df] = g.toSlot[goalInv[occ[slotLetter(g,pos,0)]]];
+    dest[pos] = dp; ori[pos] = g.faces[dp].indexOf(df);
+  }
+  const seen = new Set(); let total = 0, S = 0;
+  for (const pos of g.positions){
+    S += ori[pos];
+    if (seen.has(pos)) continue;
+    let len = 0, p = pos, hasBuf = false;
+    while (!seen.has(p)){ seen.add(p); if (p === bufPos) hasBuf = true; len++; p = dest[p]; }
+    if (hasBuf) total += len - 1;
+    else if (len >= 2) total += len + 1;
+    else if (ori[pos] !== 0) total += 2;
+  }
+  if (S % g.n !== 0) total += 1;    // only an illegal lone twist needs the in-place fix
+  return total;
+}
+
+/* Parity is ONE algorithm swapping two corners AND two edges. It runs LAST in
+   a solution, so the pairs take the cube to "solved except those four pieces"
+   and the alg finishes it. That also makes the scramble walkthrough the exact
+   inverse of the solution: reversed, parity lands first. */
+function buildSolutions(){
+  const raw = {}, goal = {};
+  for (const k of ['corner','edge']){
+    goal[k] = identityGrid(k);
+    raw[k] = walk({...app.grid0[k]}, GROUPS[k], bufPos(k), goal[k]);
+  }
+  let parityOp = null;
+  if (raw.corner.targets.length % 2 || raw.edge.targets.length % 2){
+    parityOp = { cls:'parity', swaps:{} };
+    for (const k of ['corner','edge']){
+      const pair = parityPair(k);
+      parityOp.swaps[k] = pair;
+      goal[k] = identityGrid(k);
+      swapPieces(goal[k], GROUPS[k], pair[0], pair[1]);
+      raw[k] = walk({...app.grid0[k]}, GROUPS[k], bufPos(k), goal[k]);
+    }
+  }
+  return { corner:raw.corner, edge:raw.edge, parityOp, goal };
+}
+
+/* the ordered list of algorithms actually executed */
+function programOps(){
+  const ops = [];
+  for (const kind of groupOrder()){
+    const t = app.sol[kind].targets;
+    for (let i=0;i<t.length;i+=2)
+      ops.push({ cls:'', kind, shoots:{ [kind]: t.slice(i,i+2) } });
+    const tw = app.sol[kind].stuckTwist;
+    if (tw) ops.push({ cls:'twist', kind, shoots:{ [kind]:[tw] } });
+  }
+  if (app.sol.parityOp) ops.push(app.sol.parityOp);   // parity finishes the solve
+  return ops;
+}
+function opTouches(op, kind){
+  return (op.shoots && op.shoots[kind] && op.shoots[kind].length) || (op.swaps && op.swaps[kind]);
+}
+function opText(op, kind){
+  if (op.swaps && op.swaps[kind]){
+    const g = GROUPS[kind], [a,b] = op.swaps[kind];
+    return `${refLetter(g,a)}\u2194${refLetter(g,b)}`;
+  }
+  return (op.shoots[kind] || []).join('');
+}
+function opLabel(op){
+  if (op.cls==='parity')
+    return 'Parity ' + ['corner','edge'].map(k=>`${kindName(k).toLowerCase()} ${opText(op,k)}`).join(', ');
+  return `${kindName(op.kind).slice(0,-1)} ${opText(op,op.kind)}` + (op.cls==='twist' ? ' (twist)' : '');
+}
+function groupItems(kind){
+  return programOps().filter(op => opTouches(op,kind)).map(op => ({
+    text: opText(op, kind), cls: op.cls,
+    tag: op.cls==='parity' ? 'parity' : op.cls==='twist' ? (GROUPS[kind].n===3?'twist':'flip') : ''
+  }));
+}
+/* the targets this group shoots, in order — what a typed solution is checked against */
+function groupTargets(kind){
+  const out = [];
+  for (const op of programOps()) if (op.shoots && op.shoots[kind]) out.push(...op.shoots[kind]);
+  return out;
+}
+
+/* initial grids */
+function buildCornerGrid(cp, co){
+  const g = {};
+  CORNERS.forEach((P, i) => {
+    const occ = cp[i], ori = co[i], home = cornerFaceStickers[occ], slot = cornerFaceStickers[P];
+    for (let k=0;k<3;k++) g[cornerLetters[P][slot[k]]] = cornerLetters[occ][home[((k-ori)%3+3)%3]];
+  });
+  return g;
+}
+function buildEdgeGrid(ep, eo){
+  const g = {};
+  EDGES.forEach((P, i) => {
+    const occ = ep[i], ori = eo[i], home = edgeFaceStickers[occ], slot = edgeFaceStickers[P];
+    for (let k=0;k<2;k++) g[edgeLetters[P][slot[k]]] = edgeLetters[occ][home[((k-ori)%2+2)%2]];
+  });
+  return g;
+}
+
+/* ---------- rendering data ---------- */
+function colorsFromOccupants(occC, occE){
+  const f = new Array(54);
+  FACE_ORDER.forEach((x,i)=> f[centerFacelet[i]] = x);
+  CORNERS.forEach(P => {
+    const arr = cornerFacelet[P], slot = cornerFaceStickers[P];
+    for (let k=0;k<3;k++) f[arr[k]] = cornerLetterToSlot[occC[cornerLetters[P][slot[k]]]][1];
+  });
+  EDGES.forEach(P => {
+    const arr = edgeFacelet[P], slot = edgeFaceStickers[P];
+    for (let k=0;k<2;k++) f[arr[k]] = edgeLetterToSlot[occE[edgeLetters[P][slot[k]]]][1];
+  });
+  return f;
+}
+function labelsFromOccupants(occC, occE){
+  const l = new Array(54).fill('');
+  CORNERS.forEach(P => {
+    const arr = cornerFacelet[P], slot = cornerFaceStickers[P];
+    for (let k=0;k<3;k++) l[arr[k]] = occC[cornerLetters[P][slot[k]]];
+  });
+  EDGES.forEach(P => {
+    const arr = edgeFacelet[P], slot = edgeFaceStickers[P];
+    for (let k=0;k<2;k++) l[arr[k]] = occE[edgeLetters[P][slot[k]]];
+  });
+  return l;
+}
+const FACE_VAR = { U:'var(--st-U)', D:'var(--st-D)', F:'var(--st-F)', B:'var(--st-B)', R:'var(--st-R)', L:'var(--st-L)' };
+const FACE_INK = { U:'var(--ink-dark)', D:'var(--ink-dark)', F:'var(--ink-dark)', L:'var(--ink-dark)',
+                   B:'var(--ink-light)', R:'var(--ink-light)' };
+const faceBase = face => ({ U:0, R:9, F:18, D:27, L:36, B:45 })[face];
+
+const NET_GRID = { U:[1,0], L:[0,1], F:[1,1], R:[2,1], B:[3,1], D:[1,2] };
+function buildNetSVG(facelets, labels, showLetters){
+  const cell=25, gap=2, faceGap=13, pad=6;
+  const block = 3*cell + faceGap;
+  const W = 4*block - faceGap + pad*2, H = 3*block - faceGap + pad*2;
+  let svg = `<svg class="net" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  for (const face of FACE_ORDER){
+    const [fc, fr] = NET_GRID[face], base = faceBase(face);
+    for (let r=0;r<3;r++) for (let c=0;c<3;c++){
+      const gi = base + r*3 + c;
+      const x = pad + fc*block + c*cell + gap/2, y = pad + fr*block + r*cell + gap/2, s = cell-gap;
+      svg += `<rect class="sticker" x="${x}" y="${y}" width="${s}" height="${s}" rx="3" fill="${FACE_VAR[facelets[gi]]}"/>`;
+      if (showLetters && labels[gi])
+        svg += `<text class="sticker-letter" x="${x+s/2}" y="${y+s/2+3}" text-anchor="middle" fill="${FACE_INK[facelets[gi]]}">${labels[gi]}</text>`;
+    }
+  }
+  return svg + `</svg>`;
+}
+const ISO_FACES = {
+  U:{ O:[0,3,0], u:[1,0,0],  v:[0,0,1],  off:[0,0,0] },
+  F:{ O:[0,3,3], u:[1,0,0],  v:[0,-1,0], off:[0,0,0] },
+  R:{ O:[3,3,3], u:[0,0,-1], v:[0,-1,0], off:[0,0,0] },
+  D:{ O:[0,0,3], u:[1,0,0],  v:[0,0,-1], off:[0,-1,0] },
+  B:{ O:[3,3,0], u:[-1,0,0], v:[0,-1,0], off:[0,0,-1] },
+  L:{ O:[0,3,0], u:[0,0,1],  v:[0,-1,0], off:[-1,0,0] }
+};
+function roundedPolyPath(pts, t){
+  const n = pts.length;
+  let d = '';
+  for (let i=0;i<n;i++){
+    const prev = pts[(i-1+n)%n], cur = pts[i], next = pts[(i+1)%n];
+    const enter = [cur[0]+(prev[0]-cur[0])*t, cur[1]+(prev[1]-cur[1])*t];
+    const exit  = [cur[0]+(next[0]-cur[0])*t, cur[1]+(next[1]-cur[1])*t];
+    d += (i===0?'M':'L') + ` ${enter[0].toFixed(2)} ${enter[1].toFixed(2)} `;
+    d += `Q ${cur[0].toFixed(2)} ${cur[1].toFixed(2)} ${exit[0].toFixed(2)} ${exit[1].toFixed(2)} `;
+  }
+  return d + 'Z';
+}
+/* the floating-sticker 3D cube: spaced-out, rounded-corner, translucent stickers.
+   `highlights` (optional) maps a facelet index to a stroke colour, for the guide's diagrams. */
+function build3DSVG(facelets, labels, showLetters, highlights){
+  highlights = highlights || {};
+  const cell = 30, FLOAT = 2.3, INSET = 0.24, ROUND = 0.24, ALPHA = 0.7;
+  const K = cell*Math.cos(Math.PI/6), Hh = cell*Math.sin(Math.PI/6);
+  const proj = ([x,y,z]) => [ (x-z)*K, (x+z)*Hh - y*cell ];
+  const quads = [];
+  for (const face of ['L','B','D','U','F','R']){
+    const d = ISO_FACES[face], base = faceBase(face);
+    for (let r=0;r<3;r++) for (let c=0;c<3;c++){
+      const gi = base + r*3 + c;
+      const corner = (cc, rr) => [0,1,2].map(i => d.O[i] + d.u[i]*cc + d.v[i]*rr + d.off[i]*FLOAT);
+      const pts = [corner(c,r), corner(c+1,r), corner(c+1,r+1), corner(c,r+1)].map(proj);
+      const cx = pts.reduce((a,p)=>a+p[0],0)/4, cy = pts.reduce((a,p)=>a+p[1],0)/4;
+      const inset = pts.map(p => [p[0]+(cx-p[0])*INSET, p[1]+(cy-p[1])*INSET]);
+      quads.push({ pts:inset, cx, cy, face:facelets[gi], label:(labels&&labels[gi])||'', hi:highlights[gi] });
+    }
+  }
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  for (const q of quads) for (const p of q.pts){
+    minX=Math.min(minX,p[0]); maxX=Math.max(maxX,p[0]);
+    minY=Math.min(minY,p[1]); maxY=Math.max(maxY,p[1]);
+  }
+  const pad = 10;
+  let svg = `<svg class="net" viewBox="${minX-pad} ${minY-pad} ${maxX-minX+pad*2} ${maxY-minY+pad*2}" xmlns="http://www.w3.org/2000/svg">`;
+  for (const q of quads)
+    svg += `<path class="sticker" d="${roundedPolyPath(q.pts, ROUND)}" fill="${FACE_VAR[q.face]}" fill-opacity="${ALPHA}"/>`;
+  for (const q of quads)
+    if (q.hi) svg += `<path d="${roundedPolyPath(q.pts, ROUND)}" fill="none" stroke="${q.hi}" stroke-width="3.2"/>`;
+  for (const q of quads)
+    if (showLetters && q.label)
+      svg += `<text class="sticker-letter" x="${q.cx.toFixed(2)}" y="${(q.cy+3).toFixed(2)}" text-anchor="middle" fill="${FACE_INK[q.face]}">${q.label}</text>`;
+  return svg + `</svg>`;
+}
+
+/* =========================================================================
+   APP
+   ========================================================================= */
+const POS_LABEL = {
+  URF:'UFR — Up/Front/Right', UFL:'UFL — Up/Front/Left', ULB:'UBL — Up/Back/Left', UBR:'UBR — Up/Back/Right',
+  DFR:'DFR — Down/Front/Right', DLF:'DFL — Down/Front/Left', DBL:'DBL — Down/Back/Left', DRB:'DBR — Down/Back/Right',
+  UR:'UR — Up/Right', UF:'UF — Up/Front', UL:'UL — Up/Left', UB:'UB — Up/Back',
+  DR:'DR — Down/Right', DF:'DF — Down/Front', DL:'DL — Down/Left', DB:'DB — Down/Back',
+  FR:'FR — Front/Right', FL:'FL — Front/Left', BL:'BL — Back/Left', BR:'BR — Back/Right'
+};
+const $ = id => document.getElementById(id);
+const cornerMethodSel=$('cornerMethodSel'), edgeMethodSel=$('edgeMethodSel'),
+      cornerBufSel=$('cornerBufSel'), edgeBufSel=$('edgeBufSel'),
+      cornerP1Sel=$('cornerP1Sel'), cornerP2Sel=$('cornerP2Sel'),
+      edgeP1Sel=$('edgeP1Sel'), edgeP2Sel=$('edgeP2Sel'),
+      cornerMethodNote=$('cornerMethodNote'), edgeMethodNote=$('edgeMethodNote'),
+      orderSel=$('orderSel'), vizSel=$('vizSel'), parityAlgSel=$('parityAlgSel'), memoShowSel=$('memoShowSel'), memoStageSel=$('memoStageSel'),
+      memoTimed=$('memoTimed'), execShowSel=$('execShowSel'), execTimed=$('execTimed'),
+      letterToggle=$('letterToggle'), netWrap=$('netWrap'), scrambleLine=$('scrambleLine'),
+      modePanel=$('modePanel'), phasePill=$('phasePill'), stepControls=$('stepControls'),
+      stepLabel=$('stepLabel'), vizTitle=$('vizTitle');
+
+function fillPos(sel, list){ list.forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=POS_LABEL[p]; sel.appendChild(o); }); }
+function fillShort(sel, list, kind){
+  const g = GROUPS[kind];
+  list.forEach(pos=>{
+    const o=document.createElement('option'); o.value=pos;
+    o.textContent = `${POS_LABEL[pos].split(' ')[0]} (${refLetter(g,pos)})`;
+    sel.appendChild(o);
+  });
+}
+fillPos(cornerBufSel, CORNERS); fillShort(cornerP1Sel, CORNERS,'corner'); fillShort(cornerP2Sel, CORNERS,'corner');
+fillPos(edgeBufSel, EDGES); fillShort(edgeP1Sel, EDGES,'edge'); fillShort(edgeP2Sel, EDGES,'edge');
+for (const [k,v] of Object.entries(PARITY_ALGS)){
+  const o=document.createElement('option'); o.value=k; o.textContent=v.name; parityAlgSel.appendChild(o);
+}
+function applyParityAlg(){
+  const a = PARITY_ALGS[parityAlgSel.value];
+  if (!a || !a.corner) return;
+  cornerP1Sel.value=a.corner[0]; cornerP2Sel.value=a.corner[1];
+  edgeP1Sel.value=a.edge[0];     edgeP2Sel.value=a.edge[1];
+}
+parityAlgSel.value='rperm'; applyParityAlg();
+for (const [k,m] of Object.entries(METHODS.corner)){ const o=document.createElement('option'); o.value=k; o.textContent=m.name; cornerMethodSel.appendChild(o); }
+for (const [k,m] of Object.entries(METHODS.edge)){ const o=document.createElement('option'); o.value=k; o.textContent=m.name; edgeMethodSel.appendChild(o); }
+cornerMethodSel.value='style3'; edgeMethodSel.value='style3';
+
+let app = {
+  scramble:'', grid0:{corner:null, edge:null}, sol:{corner:null, edge:null},
+  mode:'home', memoStageIdx:0, memoDone:false,
+  execStarted:false, execDone:false, execRevealed:false,
+  scrambleIdx:0, scrambleItems:[],
+  entryText:{corner:'',edge:''}, hint:{corner:false,edge:false}, memoReveal:false,
+  viz:{steps:[], idx:0, stepping:false},
+  times:{memoEdge:0, memoCorner:0, memo:0, exec:0},
+  activeTimer:null, t0:0, tickId:null,
+  history:[], histPos:-1
+};
+
+const methodOf = kind => METHODS[kind][kind==='corner'?cornerMethodSel.value:edgeMethodSel.value];
+const bufPos   = kind => kind==='corner' ? cornerBufSel.value : edgeBufSel.value;
+const parityPair = kind => kind==='corner'
+  ? [cornerP1Sel.value, cornerP2Sel.value] : [edgeP1Sel.value, edgeP2Sel.value];
+const bufRef   = kind => refLetter(GROUPS[kind], bufPos(kind));
+const groupOrder = () => orderSel.value==='edges' ? ['edge','corner'] : ['corner','edge'];
+const kindName = k => GROUPS[k].name;
+const fmt = ms => (ms/1000).toFixed(2)+'s';
+
+function applyMethodDefaults(kind){
+  const m = methodOf(kind);
+  (kind==='corner'?cornerBufSel:edgeBufSel).value = m.buffer;
+  // the corner method decides the parity alg: Old Pochmann shoots corners with
+  // the Y-perm, whose collateral is the UB/UL edge swap, so parity must be the
+  // R-perm. Commutator-based corners leave no collateral, so J-perm it is.
+  if (kind==='corner' && m.parityAlg){ parityAlgSel.value = m.parityAlg; applyParityAlg(); }
+}
+function syncMethodUI(){
+  for (const kind of ['corner','edge']){
+    const g = GROUPS[kind];
+    const note = kind==='corner' ? cornerMethodNote : edgeMethodNote;
+    const own = pieceSlots(g, bufPos(kind));
+    const ref = own[0], others = own.slice(1);
+    const [pa, pb] = parityPair(kind);
+    const pTxt = `${refLetter(g,pa)}\u2194${refLetter(g,pb)}`;
+    const hitsBuffer = pa===bufPos(kind) || pb===bufPos(kind);
+    note.innerHTML = `Buffer <b>${ref}</b>; <b>${others.join('</b>, <b>')}</b> never appear. `
+      + `Parity (${PARITY_ALGS[parityAlgSel.value].name}) swaps <b>${pTxt}</b>, last of all`
+      + (hitsBuffer ? ` — that pair includes your buffer.` : `.`);
+  }
+}
+
+function newScramble(){ applyScramble(randomScramble(20)); }
+function prevScramble(){ if (app.histPos > 0){ app.histPos--; applyScramble(app.history[app.histPos], false); } }
+function nextScramble(){ if (app.histPos < app.history.length-1){ app.histPos++; applyScramble(app.history[app.histPos], false); } }
+function syncHistoryUI(){
+  const pv=$('prevScrambleBtn'), nx=$('nextScrambleBtn'), hp=$('histPos');
+  if (pv) pv.disabled = app.histPos <= 0;
+  if (nx) nx.disabled = app.histPos >= app.history.length-1;
+  if (hp) hp.textContent = app.history.length > 1 ? `${app.histPos+1} / ${app.history.length}` : '';
+}
+function applyScramble(alg, record = true){
+  if (record){
+    app.history = app.history.slice(0, app.histPos+1);
+    app.history.push(alg);
+    if (app.history.length > 50) app.history.shift();
+    app.histPos = app.history.length-1;
+  }
+  app.scramble = alg;
+  const s = applyAlg(identityCube(), alg);
+  app.grid0.corner = buildCornerGrid(s.cp, s.co);
+  app.grid0.edge = buildEdgeGrid(s.ep, s.eo);
+  recomputeSolution();
+  goHome();
+}
+function recomputeSolution(){
+  syncMethodUI();
+  if ($('setupSummary')) updateSetupSummary();
+  app.sol = buildSolutions();
+}
+const scrambledOcc = () => ({ occC:{...app.grid0.corner}, occE:{...app.grid0.edge} });
+function solvedOcc(){
+  const occC={}, occE={};
+  ALL_CORNER_LETTERS.forEach(L=>occC[L]=L);
+  ALL_EDGE_LETTERS.forEach(L=>occE[L]=L);
+  return {occC, occE};
+}
+function goHome(){
+  stopTimer();
+  app.mode='home'; app.memoStageIdx=0; app.memoDone=false;
+  app.execStarted=false; app.execDone=false; app.execRevealed=false;
+  app.scrambleIdx=0; app.entryText={corner:'',edge:''};
+  app.times={memoEdge:0,memoCorner:0,memo:0,exec:0};
+  setViz([{...scrambledOcc(), label:'Scrambled'}], 0, false, 'Cube state');
+  render();
+}
+function setViz(steps, idx, stepping, title){ app.viz={steps, idx, stepping}; vizTitle.textContent = title||'Cube state'; }
+
+/* ---------- step sequences ---------- */
+function applyOp(occ, op){
+  for (const kind of ['corner','edge']){
+    if (op.swaps && op.swaps[kind]) swapPieces(occ[kind], GROUPS[kind], op.swaps[kind][0], op.swaps[kind][1]);
+    for (const T of ((op.shoots && op.shoots[kind]) || [])) shootTarget(occ[kind], GROUPS[kind], bufPos(kind), T);
+  }
+}
+function stepsFromOps(startOcc, ops, startLabel){
+  const occ = { corner:{...startOcc.occC}, edge:{...startOcc.occE} };
+  const steps = [{ occC:{...occ.corner}, occE:{...occ.edge}, label:startLabel }];
+  for (const op of ops){
+    applyOp(occ, op);
+    steps.push({ occC:{...occ.corner}, occE:{...occ.edge}, label: opLabel(op) });
+  }
+  return steps;
+}
+function buildSolveSteps(){ return stepsFromOps(scrambledOcc(), programOps(), 'Scrambled'); }
+
+/* solved -> scramble: every algorithm backwards, each one inverted.
+   A 2-swap undoes itself; a pair undoes as its letters reversed. */
+function inverseOps(){
+  return programOps().slice().reverse().map(op => {
+    const o = { cls:op.cls, kind:op.kind };
+    if (op.swaps) o.swaps = op.swaps;
+    if (op.shoots){
+      o.shoots = {};
+      for (const kind of Object.keys(op.shoots))
+        o.shoots[kind] = op.shoots[kind].map(T => inverseTarget(GROUPS[kind], bufPos(kind), T)).reverse();
+    }
+    return o;
+  });
+}
+function buildScrambleSequence(){
+  const ops = inverseOps();
+  return { items: ops, steps: stepsFromOps(solvedOcc(), ops, 'Solved') };
+}
+
+/* ---------- live validation ---------- */
+function parseTokens(text){
+  const t = text.toUpperCase().trim();
+  if (!t) return [];
+  if (/\s/.test(t)) return t.split(/\s+/).map(x=>x.replace(/[^A-Z.\-↔]/g,'')).filter(Boolean);
+  const clean = t.replace(/[^A-Z.\-]/g,'');
+  const out = [];
+  for (let i=0;i<clean.length;i+=2) out.push(clean.slice(i,i+2));
+  return out;
+}
+function validateEntry(kind, text){
+  const g = GROUPS[kind], bp = bufPos(kind);
+  const ref = refLetter(g, bp), own = new Set(pieceSlots(g, bp));
+  const occ = {...app.grid0[kind]};
+  const goal = (app.sol.goal && app.sol.goal[kind]) || identityGrid(kind);
+  const goalInv = {}; for (const L of g.all) goalInv[goal[L]] = L;
+  const tokens = parseTokens(text);
+
+  const flat = [];
+  tokens.forEach((tok, ti) => { for (const ch of tok.split('')){ if (ch!=='.' && ch!=='-' && ch!=='\u2194') flat.push({ch, ti}); } });
+  if (flat.length && flat[flat.length-1].ch === ref) flat.pop();
+
+  const tokState = tokens.map(()=> 'pending');
+  // `message` may name the correct next helper, so it only shows on request.
+  // `brief` says how you're doing without giving the answer away.
+  let message = '', brief = '', mstate = 'dim', done = 0;
+  const wrong = n => `Helper ${n} doesn\u2019t work here.`;
+
+  for (const {ch, ti} of flat){
+    if (!g.all.includes(ch)){
+      tokState[ti]='bad'; message = brief = `\u201c${ch}\u201d isn\u2019t a sticker letter on this cube.`; mstate='bad'; break;
+    }
+    if (ch === ref){
+      tokState[ti]='bad'; message = brief = `${ref} is your buffer \u2014 you can\u2019t shoot to it.`; mstate='bad'; break;
+    }
+    // a shot is accepted exactly when some optimal solution still makes it: the fewest
+    // shots left must drop by one. That covers the usual forced helper, any sticker whose
+    // orientation happens to work out, and breaking into another cycle mid-trace.
+    const holding = occ[ref];
+    const wanted = holding === goal[ref] ? null : goalInv[holding];
+    const trial = {...occ}; shootTarget(trial, g, bp, ch);
+    if (minShots(trial, g, bp, goal) !== minShots(occ, g, bp, goal) - 1){
+      tokState[ti]='bad'; brief = wrong(done+1); mstate='bad';
+      const samePiece = wanted !== null && g.toSlot[ch][0] === g.toSlot[wanted][0];
+      if (own.has(ch))
+        message = `${ch} is on your buffer piece \u2014 shooting there just twists your buffer in place.`;
+      else if (occ[ch] === goal[ch])
+        message = `Helper ${done+1}: ${ch} is already solved \u2014 breaking in there wastes a pair.`;
+      else if (samePiece)
+        message = `Helper ${done+1}: right piece, wrong sticker \u2014 your buffer is holding ${holding}, so it goes to ${wanted}; ${ch} would leave it ${g.n===3?'twisted':'flipped'}.`;
+      else
+        message = `Helper ${done+1}: that works but costs extra pairs \u2014 your buffer is holding ${holding}, so ${wanted !== null && !own.has(wanted) ? wanted : 'any unsolved sticker'} is the efficient shot.`;
+      break;
+    }
+    shootTarget(occ, g, bp, ch);
+    done++;
+    if (tokState[ti] !== 'bad') tokState[ti] = 'good';
+  }
+
+  const solved = g.all.every(L => occ[L] === goal[L]);
+  if (!message){
+    const holdingNow = occ[ref];
+    const wantedNow = holdingNow === goal[ref] ? null : goalInv[holdingNow];
+    const twistNow = wantedNow !== null && own.has(wantedNow);
+    if (solved){
+      const same = flat.map(f=>f.ch).join('') === groupTargets(kind).join('');
+      message = `\u2713 ${kindName(kind)} done in ${tokens.length} pairs \u2014 ${same ? 'matches the prescribed solution' : 'a different solution, but valid'}.`
+        + (app.sol.parityOp ? ` The parity alg finishes it.` : ``);
+      brief = message; mstate = 'good';
+    } else if (!flat.length){
+      message = twistNow
+        ? `Buffer piece is home but ${g.n===3?'twisted':'flipped'} \u2014 break into any unsolved sticker; the ${g.n===3?'twist':'flip'} rides along.`
+        : occ[ref]===goal[ref]
+        ? `Buffer is settled \u2014 break into a cycle by shooting to any unsolved sticker.`
+        : `Buffer is holding ${occ[ref]} \u2014 that's your first helper.`;
+      brief = `Type your pairs \u2014 each one is checked as you go.`;
+    } else {
+      message = twistNow
+        ? `${done} helpers good \u2014 buffer piece is home but ${g.n===3?'twisted':'flipped'}; break into a new cycle.`
+        : occ[ref]===goal[ref]
+        ? `${done} helpers good \u2014 buffer is settled, break into a new cycle.`
+        : `${done} helpers good \u2014 buffer is now holding ${occ[ref]}.`;
+      brief = `${done} helper${done===1?'':'s'} good.`;
+    }
+  }
+  const results = tokens.map((tok,i)=>({ tok, state:tokState[i] }));
+  return {results, solved, message, brief, mstate};
+}
+
+/* ---------- timers ---------- */
+function startTimer(key){
+  stopTimer();
+  app.activeTimer = key; app.t0 = performance.now() - app.times[key];
+  app.tickId = setInterval(()=>{
+    app.times[key] = performance.now() - app.t0;
+    const el = document.querySelector(`[data-timer="${key}"]`);
+    if (el) el.textContent = fmt(app.times[key]);
+  }, 70);
+}
+function stopTimer(){
+  if (app.activeTimer) app.times[app.activeTimer] = performance.now() - app.t0;
+  if (app.tickId) clearInterval(app.tickId);
+  app.tickId = null; app.activeTimer = null;
+}
+
+/* ---------- render ---------- */
+function render(){
+  phasePill.textContent = { home:'setup', memo:'memo', exec:'execution', scramble:'scrambling', review:'review' }[app.mode];
+  scrambleLine.textContent = app.scramble || '—';
+  syncHistoryUI();
+  renderViz();
+  ({ home:renderHome, memo:renderMemo, exec:renderExec, scramble:renderScrambleMode, review:renderReview })[app.mode]();
+}
+function renderViz(){
+  const steps = app.viz.steps.length ? app.viz.steps : [{...scrambledOcc(), label:'Scrambled'}];
+  const step = steps[Math.min(app.viz.idx, steps.length-1)];
+  const facelets = colorsFromOccupants(step.occC, step.occE);
+  const showL = letterToggle.checked;
+  const labels = showL ? labelsFromOccupants(step.occC, step.occE) : [];
+  netWrap.innerHTML = vizSel.value==='net' ? buildNetSVG(facelets, labels, showL) : build3DSVG(facelets, labels, showL);
+  stepControls.hidden = !app.viz.stepping;
+  if (app.viz.stepping) stepLabel.textContent = `${app.viz.idx} / ${steps.length-1} · ${step.label}`;
+}
+function chipHTML(it, extra=''){
+  return `<span class="pair-chip ${it.cls} ${extra}">${it.text}${it.tag?`<span class="chip-tag">${it.tag}</span>`:''}</span>`;
+}
+function itemsHTML(items, curIdx){
+  return items.map((it,i)=>{
+    let extra = '';
+    if (curIdx !== undefined){ if (i < curIdx) extra='done'; if (i === curIdx) extra='cur'; }
+    return chipHTML(it, extra);
+  }).join('');
+}
+function pairsBlock(kind){
+  const items = groupItems(kind);
+  const bits = [`${items.length} algs`];
+  if (app.sol.parityOp) bits.push('parity');
+  if (app.sol[kind].stuckTwist) bits.push(GROUPS[kind].n===3 ? 'buffer twist' : 'buffer flip');
+  return `<div class="grp">${kindName(kind)} · ${bits.join(' · ')}</div>
+          <div class="pairs-display">${itemsHTML(items)}</div>`;
+}
+function entryBlock(kind){
+  return `<div class="grp">${kindName(kind)} — your pairs</div>
+    <input type="text" class="mono entry-input" id="entry-${kind}" placeholder="type pairs, e.g. ${kind==='corner'?'DV MA BS':'VL NB XP'} …" value="${app.entryText[kind]}">
+    <div class="pairs-display" id="chips-${kind}"></div>
+    <div class="status-row"><div class="status" id="status-${kind}"></div>
+      <button class="hint-btn" id="hint-${kind}">${app.hint[kind]?'Hide hint':'Hint'}</button></div>`;
+}
+function wireEntry(kind){
+  const el = $(`entry-${kind}`);
+  if (!el) return;
+  const update = () => {
+    app.entryText[kind] = el.value;
+    const {results, message, brief, mstate} = validateEntry(kind, el.value);
+    $(`chips-${kind}`).innerHTML = results.map(r=>`<span class="pair-chip ${r.state}">${r.tok}</span>`).join('');
+    const st = $(`status-${kind}`);
+    st.className = 'status '+mstate;
+    st.textContent = app.hint[kind] ? message : brief;
+  };
+  el.addEventListener('input', update);
+  const hb = $(`hint-${kind}`);
+  if (hb) hb.onclick = () => {
+    app.hint[kind] = !app.hint[kind];
+    hb.textContent = app.hint[kind] ? 'Hide hint' : 'Hint';
+    update();
+    el.focus();
+  };
+  update();
+}
+const timerBlock = (key,label) =>
+  `<div class="timer-block"><div class="tl">${label}</div><div class="timer mono" data-timer="${key}">${fmt(app.times[key])}</div></div>`;
+
+function renderHome(){
+  modePanel.innerHTML = `
+    <h3>Pick a practice branch</h3>
+    <div class="row" style="gap:10px;">
+      <button class="big primary" id="toScramble">Scramble</button>
+      <button class="big" id="toMemo">Memorize</button>
+      <button class="big" id="toExec">Execute</button>
+    </div>`;
+  $('toMemo').onclick = enterMemo;
+  $('toExec').onclick = enterExec;
+  $('toScramble').onclick = enterScrambleMode;
+}
+
+const memoStaged = () => memoStageSel.value==='split';
+const memoTimerKey = () => !memoStaged() ? 'memo' : (groupOrder()[app.memoStageIdx]==='edge' ? 'memoEdge' : 'memoCorner');
+function enterMemo(){
+  app.mode='memo'; app.memoStageIdx=0; app.memoDone=false; app.memoGroupDone={};
+  app.entryText={corner:'',edge:''};
+  app.hint={corner:false,edge:false};
+  app.memoReveal = memoShowSel.value==='shown';
+  app.times={memoEdge:0,memoCorner:0,memo:0,exec:0};
+  setViz([{...scrambledOcc(), label:'Scrambled'}], 0, false, 'Cube state');
+  render();
+  if (memoTimed.checked) startTimer(memoTimerKey());
+}
+function renderMemo(){
+  const order = groupOrder(), staged = memoStaged();
+  const kinds = order;                       // both groups on screen from the start
+  const shown = app.memoReveal;
+  app.memoGroupDone = app.memoGroupDone || {};
+
+  let html = `<h3>Memo</h3>`;
+  if (memoTimed.checked){
+    html += `<div class="timers">`;
+    if (staged){
+      html += timerBlock(order[0]==='edge'?'memoEdge':'memoCorner', kindName(order[0]));
+      html += timerBlock(order[1]==='edge'?'memoEdge':'memoCorner', kindName(order[1]));
+    } else html += timerBlock('memo','Memo');
+    html += `</div>`;
+  }
+  if (app.memoDone){
+    const total = staged ? app.times.memoEdge + app.times.memoCorner : app.times.memo;
+    html += `<div class="hint">Memo complete${memoTimed.checked ? ` \u2014 total ${fmt(total)}` : ''}.</div>
+      <hr class="divider"><div class="row">
+        <button class="primary" id="memoToExec">Execute this scramble</button>
+        <button id="memoReview">Review solution</button>
+        <button class="ghost" id="memoNext">Next scramble</button>
+      </div>`;
+    modePanel.innerHTML = html;
+    $('memoToExec').onclick = enterExec; $('memoReview').onclick = enterReview; $('memoNext').onclick = newScramble;
+    return;
+  }
+  html += shown ? kinds.map(pairsBlock).join('')
+                : `<div class="blind-note">Pairs hidden \u2014 read the cube state and derive them yourself.</div>`;
+  if (app.sol.parityOp)
+    html += `<div class="legend">This scramble has parity: after the pairs, one alg swaps ${['corner','edge'].map(k=>`${kindName(k).toLowerCase()} ${opText(app.sol.parityOp,k)}`).join(' and ')} to finish.</div>`;
+  html += `<hr class="divider">`;
+  html += kinds.map(k => `<div style="margin-bottom:10px;">${entryBlock(k)}</div>`).join('');
+  html += `<div class="row">
+      <button class="primary" id="memoFinish">Done memorizing</button>
+      <button id="memoReveal">${shown ? 'Hide pairs' : 'Show pairs'}</button>
+      <button class="ghost" id="memoAbort">Back</button>
+    </div>`;
+  modePanel.innerHTML = html;
+  kinds.forEach(wireEntry);
+
+  // split timing: whichever field you're working in is the group on the clock;
+  // finishing a group stops its timer and hops you straight into the other field.
+  const keyOf = k => k==='edge' ? 'memoEdge' : 'memoCorner';
+  kinds.forEach(k => {
+    const el = $(`entry-${k}`);
+    el.addEventListener('focus', () => {
+      if (staged && memoTimed.checked && !app.memoGroupDone[k] && app.activeTimer !== keyOf(k)) startTimer(keyOf(k));
+    });
+    el.addEventListener('input', () => {
+      if (app.memoGroupDone[k] || !validateEntry(k, el.value).solved) return;
+      app.memoGroupDone[k] = true;
+      if (staged && app.activeTimer === keyOf(k)) stopTimer();
+      const next = kinds.find(o => !app.memoGroupDone[o]);
+      if (next) $(`entry-${next}`).focus();
+    });
+  });
+  const firstOpen = kinds.find(k => !app.memoGroupDone[k]);
+  if (firstOpen) $(`entry-${firstOpen}`).focus({preventScroll:true});
+
+  $('memoFinish').onclick = () => { stopTimer(); app.memoDone = true; render(); };
+  $('memoReveal').onclick = () => { app.memoReveal = !app.memoReveal; render(); };
+  $('memoAbort').onclick = goHome;
+}
+
+function enterExec(){
+  stopTimer();
+  app.mode='exec'; app.execStarted=false; app.execDone=false;
+  app.execRevealed = execShowSel.value==='shown';
+  app.times.exec = 0;
+  setViz([{...scrambledOcc(), label:'Scrambled'}], 0, false, 'Cube state');
+  render();
+}
+function renderExec(){
+  let html = `<h3>Execution</h3>`;
+  if (execTimed.checked) html += `<div class="timers">${timerBlock('exec','Execution')}</div>`;
+  html += app.execRevealed ? groupOrder().map(pairsBlock).join('')
+                           : `<div class="blind-note">Solution hidden — execute from memory.</div>`;
+  html += `<hr class="divider"><div class="row">`;
+  if (!app.execStarted && !app.execDone) html += `<button class="primary" id="execStart">${execTimed.checked ? 'Start execution' : 'Begin'}</button>`;
+  else if (!app.execDone) html += `<button class="primary" id="execStop">Stop — done</button>`;
+  else html += `<button class="primary" id="execReview">Review solution</button><button class="ghost" id="execNext">Next scramble</button>`;
+  if (!app.execDone) html += `<button id="execReveal">${app.execRevealed ? 'Hide solution' : 'Reveal solution'}</button><button class="ghost" id="execBack">Back</button>`;
+  html += `</div>`;
+  modePanel.innerHTML = html;
+  if ($('execStart')) $('execStart').onclick = () => { app.execStarted=true; render(); if (execTimed.checked) startTimer('exec'); };
+  if ($('execStop')) $('execStop').onclick = () => { stopTimer(); app.execDone=true; render(); };
+  if ($('execReveal')) $('execReveal').onclick = () => { app.execRevealed=!app.execRevealed; render(); };
+  if ($('execBack')) $('execBack').onclick = goHome;
+  if ($('execReview')) $('execReview').onclick = enterReview;
+  if ($('execNext')) $('execNext').onclick = newScramble;
+}
+
+function enterScrambleMode(){
+  stopTimer();
+  app.mode='scramble';
+  const {items, steps} = buildScrambleSequence();
+  app.scrambleItems = items; app.scrambleIdx = 0;
+  setViz(steps, 0, true, 'Follow along from solved');
+  render();
+}
+function scrambleAdvance(){
+  if (app.mode!=='scramble') return;
+  if (app.scrambleIdx >= app.scrambleItems.length){ enterMemo(); return; }  // done -> into memo
+  app.scrambleIdx++; app.viz.idx = app.scrambleIdx; render();
+}
+function opDisplay(op){
+  if (op.cls==='parity')
+    return ['corner','edge'].map(k=>opText(op,k)).join(' + ');
+  return opText(op, op.kind);
+}
+/* render an ordered op list as labelled runs, so it's always clear whether a
+   chip is a corner alg, an edge alg, or the shared parity alg */
+function opRunsHTML(ops, curIdx){
+  let html = '', i = 0;
+  while (i < ops.length){
+    const key = ops[i].cls==='parity' ? 'parity' : ops[i].kind;
+    let j = i;
+    while (j < ops.length && (ops[j].cls==='parity' ? 'parity' : ops[j].kind) === key) j++;
+    const run = ops.slice(i, j);
+    const title = key==='parity'
+      ? `Parity \u00b7 one alg, corners + edges`
+      : `${kindName(key)} \u00b7 ${run.length} alg${run.length===1?'':'s'}`;
+    html += `<div class="grp">${title}</div><div class="pairs-display">` +
+      run.map((op,n)=>{
+        const gi = i + n;
+        let extra = '';
+        if (gi < curIdx) extra='done';
+        if (gi === curIdx) extra='cur';
+        return chipHTML({ text:opDisplay(op), cls:op.cls,
+                          tag: op.cls==='parity'?'parity':(op.cls==='twist'?'twist':'') }, extra);
+      }).join('') + `</div>`;
+    i = j;
+  }
+  return html;
+}
+function opWho(op){
+  if (op.cls==='parity') return 'parity — one alg, corners + edges';
+  return kindName(op.kind).slice(0,-1).toLowerCase() + (op.cls==='twist' ? ' twist' : '');
+}
+function renderScrambleMode(){
+  const items = app.scrambleItems;
+  const done = app.scrambleIdx >= items.length;
+  const cur = items[app.scrambleIdx];
+  let html = `<h3>Scramble from solved</h3>
+    <div class="hint">Start with a solved cube and execute these in order — your own algorithms, run backwards. The diagram shows exactly what your cube should look like after each one.</div>
+    <hr class="divider">
+    ${opRunsHTML(items, app.scrambleIdx)}
+    <hr class="divider">`;
+  if (!done){
+    html += `<div class="row" style="align-items:center;">
+        <div style="flex:1;min-width:130px;">
+          <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);">Next \u2014 ${opWho(cur)}</div>
+          <div class="timer mono">${opDisplay(cur)}</div>
+        </div>
+        <button class="primary" id="scrNext">Executed it \u25B6</button>
+        <button id="scrPrev" ${app.scrambleIdx===0?'disabled':''}>\u25C0 Back</button>
+        <button class="ghost" id="scrAbort">Cancel</button>
+      </div>
+      <div class="kbd-hint" style="margin-top:8px;"><kbd>Enter</kbd> for the next one \u00b7 <kbd>\u2190</kbd> <kbd>\u2192</kbd> move between buttons</div>`;
+  } else {
+    html += `<div class="status good">\u2713 Your cube now matches the scramble.</div>
+      <div class="row" style="margin-top:10px;">
+        <button class="primary" id="scrMemo">Memorize \u25B6</button>
+        <button class="ghost" id="scrAnother">Scramble another</button>
+      </div>
+      <div class="kbd-hint" style="margin-top:8px;"><kbd>Enter</kbd> to start memo \u00b7 execution comes after</div>`;
+  }
+  modePanel.innerHTML = html;
+  if ($('scrNext')) $('scrNext').onclick = scrambleAdvance;
+  if ($('scrPrev')) $('scrPrev').onclick = () => { app.scrambleIdx=Math.max(0,app.scrambleIdx-1); app.viz.idx=app.scrambleIdx; render(); };
+  if ($('scrAbort')) $('scrAbort').onclick = goHome;
+  if ($('scrMemo')) $('scrMemo').onclick = enterMemo;
+  if ($('scrAnother')) $('scrAnother').onclick = newScramble;
+}
+
+function enterReview(){
+  stopTimer(); app.mode='review';
+  setViz(buildSolveSteps(), 0, true, 'Solve, step by step');
+  render();
+}
+function renderReview(){
+  const staged = memoStaged();
+  const hasTimes = app.times.memo || app.times.memoEdge || app.times.memoCorner || app.times.exec;
+  let html = `<h3>Review</h3>`;
+  if (hasTimes){
+    html += `<div class="timers">`;
+    if (staged && (app.times.memoEdge || app.times.memoCorner)) html += timerBlock('memoEdge','Edge memo') + timerBlock('memoCorner','Corner memo');
+    else if (app.times.memo) html += timerBlock('memo','Memo');
+    if (app.times.exec) html += timerBlock('exec','Execution');
+    html += `</div>`;
+  }
+  html += groupOrder().map(pairsBlock).join('');
+  html += `<div class="legend">Amber = parity · violet = a buffer twist/flip handled by its own alg.</div>
+    <hr class="divider"><div class="row">
+      <button class="primary" id="revNext">Next scramble</button>
+      <button class="ghost" id="revHome">Back to branches</button>
+    </div>`;
+  modePanel.innerHTML = html;
+  $('revNext').onclick = newScramble; $('revHome').onclick = goHome;
+}
+
+/* =========================================================================
+   GUIDE — the reference page. Letter tables are generated from the same data
+   the trainer runs on, so they can't drift out of step with it.
+   ========================================================================= */
+function speffzTableHTML(kind){
+  const g = GROUPS[kind];
+  const rows = g.positions.map(P => {
+    const cells = g.faces[P].map((f,i) =>
+      `<td><span class="k">${g.letters[P][f]}</span> <span style="color:var(--text-dim)">${f}</span></td>`).join('');
+    return `<tr><td><b>${POS_LABEL[P].split(' ')[0]}</b></td>${cells}${g.n===2?'<td></td>':''}</tr>`;
+  }).join('');
+  return `<div class="tbl"><table><thead><tr><th>Piece</th><th>Reference sticker</th><th>Second</th><th>Third</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+/* ---------- guide diagrams: reuse the same floating-sticker 3D cube as the live viz ---------- */
+function pieceFacelets(kind, pos){ return kind==='corner' ? cornerFacelet[pos] : edgeFacelet[pos]; }
+function letterFacelet(kind, letter){
+  const [pos, face] = GROUPS[kind].toSlot[letter];
+  const idx = GROUPS[kind].faces[pos].indexOf(face);
+  return pieceFacelets(kind, pos)[idx];
+}
+/* list entries: {kind, pos, color, tag, atLetter?}. atLetter places the tag at that
+   letter's own sticker rather than the piece's reference sticker (arr[0]). */
+function highlightSet(list){
+  const hi = {}, labels = new Array(54).fill('');
+  for (const {kind, pos, color, tag, atLetter} of list){
+    const arr = pieceFacelets(kind, pos);
+    for (const idx of arr) hi[idx] = color;
+    labels[atLetter ? letterFacelet(kind, atLetter) : arr[0]] = tag;
+  }
+  return {hi, labels};
+}
+function docFigure(svg, capHTML, big){
+  return `<div class="diagram${big?' diagram-big':''}">${svg}<div class="cap">${capHTML}</div></div>`;
+}
+function docSpeffzDiagram(){
+  const {occC, occE} = solvedOcc();
+  const facelets = colorsFromOccupants(occC, occE);
+  const labels = labelsFromOccupants(occC, occE);
+  return docFigure(build3DSVG(facelets, labels, true), `Every sticker’s Speffz letter, solved cube.`, true);
+}
+/* one method's buffer + a worked helper example (by letter), on an otherwise solved cube */
+function docMethodDiagram(kind, methodKey, helperLetter){
+  const {occC, occE} = solvedOcc();
+  const facelets = colorsFromOccupants(occC, occE);
+  const g = GROUPS[kind], m = METHODS[kind][methodKey];
+  const helperPos = g.toSlot[helperLetter][0];
+  const {hi, labels} = highlightSet([
+    { kind, pos:m.buffer,   color:'var(--accent)', tag:refLetter(g,m.buffer) },
+    { kind, pos:helperPos,  color:'var(--warn)',   tag:helperLetter, atLetter:helperLetter }
+  ]);
+  return docFigure(build3DSVG(facelets, labels, true, hi),
+    `<b>${m.name}</b><br><span class="swatch" style="background:var(--accent)"></span>buffer <b>${refLetter(g,m.buffer)}</b>
+     &nbsp; <span class="swatch" style="background:var(--warn)"></span>helper e.g. <b>${helperLetter}</b>`);
+}
+/* the worked example: Old Pochmann corners solving the pair "PB", one shot at a time.
+   A single corner shot is not a legal state on its own — real Old Pochmann corner algs
+   (Y-perm) always carry a collateral UB/UL edge swap (see Parity below), which is why the
+   mid-pair panel shows those two edges swapped too; two shots cancel it out. */
+function docPBDemo(){
+  const g = GROUPS.corner, bp = 'ULB';
+  const eg = GROUPS.edge, ePair = PARITY_ALGS.rperm.edge;
+  const fig = (occCorner, occEdge, hiList, cap) => {
+    const {hi, labels} = highlightSet(hiList);
+    return docFigure(build3DSVG(colorsFromOccupants(occCorner, occEdge), labels, true, hi), cap);
+  };
+  let occC = identityGrid('corner'), occE = identityGrid('edge');
+  shootTarget(occC, g, bp, 'B'); shootTarget(occC, g, bp, 'P');          // scrambled: buffer holds P
+  const state0C = {...occC}, state0E = {...occE};
+  shootTarget(occC, g, bp, 'P');                                        // shoot P: buffer now holds B
+  swapPieces(occE, eg, ePair[0], ePair[1]);                              // + its real collateral edge swap
+  const state1C = {...occC}, state1E = {...occE};
+  shootTarget(occC, g, bp, 'B');                                        // shoot B: solved
+  swapPieces(occE, eg, ePair[0], ePair[1]);                              // collateral cancels out
+  const state2C = {...occC}, state2E = {...occE};
+  return fig(state0C, state0E, [
+      { kind:'corner', pos:bp, color:'var(--accent)', tag:'A' },
+      { kind:'corner', pos:g.toSlot['P'][0], color:'var(--warn)', tag:'P', atLetter:'P' }
+    ], `Initial — buffer <b>A</b> holds <b>P</b>`)
+    + fig(state1C, state1E, [
+      { kind:'corner', pos:bp, color:'var(--accent)', tag:'A' },
+      { kind:'corner', pos:g.toSlot['B'][0], color:'var(--warn)', tag:'B', atLetter:'B' }
+    ], `Shot <b>P</b> — buffer now holds <b>B</b><br><i>(+ its collateral edge swap)</i>`)
+    + fig(state2C, state2E, [
+      { kind:'corner', pos:bp, color:'var(--good)', tag:'A' }
+    ], `Shot <b>B</b> — pair <b>PB</b> done`);
+}
+function docParityDiagram(algKey){
+  const alg = PARITY_ALGS[algKey];
+  const occC = identityGrid('corner'), occE = identityGrid('edge');
+  swapPieces(occC, GROUPS.corner, alg.corner[0], alg.corner[1]);
+  swapPieces(occE, GROUPS.edge, alg.edge[0], alg.edge[1]);
+  const facelets = colorsFromOccupants(occC, occE);
+  const {hi, labels} = highlightSet([
+    { kind:'corner', pos:alg.corner[0], color:'var(--accent)', tag:refLetter(GROUPS.corner,alg.corner[0]) },
+    { kind:'corner', pos:alg.corner[1], color:'var(--accent)', tag:refLetter(GROUPS.corner,alg.corner[1]) },
+    { kind:'edge',   pos:alg.edge[0],   color:'var(--warn)',   tag:refLetter(GROUPS.edge,alg.edge[0]) },
+    { kind:'edge',   pos:alg.edge[1],   color:'var(--warn)',   tag:refLetter(GROUPS.edge,alg.edge[1]) }
+  ]);
+  const cRef = alg.corner.map(p=>refLetter(GROUPS.corner,p)).join('↔');
+  const eRef = alg.edge.map(p=>refLetter(GROUPS.edge,p)).join('↔');
+  return docFigure(build3DSVG(facelets, labels, true, hi),
+    `<b>${alg.name}</b><br><span class="swatch" style="background:var(--accent)"></span>corners ${cRef}
+     &nbsp; <span class="swatch" style="background:var(--warn)"></span>edges ${eRef}`);
+}
+
+const DOC_SECTIONS = [
+  ['what', 'What this is'],
+  ['start', 'Three branches'],
+  ['speffz', 'Speffz lettering'],
+  ['pieces', 'Buffers, Helpers, and Methods'],
+  ['parity', 'Parity'],
+  ['credits', 'Credits']
+];
+function docsHTML(){
+  return `
+  <div class="docs-top">
+    <h2>Rubik's Cube 3x3 Blindfold Practice Tool — guide</h2>
+    <button id="docsClose">Back to the trainer</button>
+  </div>
+  <div class="toc">${DOC_SECTIONS.map(([id,t])=>`<button data-go="sec-${id}">${t}</button>`).join('')}</div>
+
+  <h3 id="sec-what">What this is</h3>
+  <p>A practice tool for 3&times;3 blindfolded (BLD) solving. It generates scrambles, works out the
+  letter-pair solution for your method, and drills memorization and execution against it.</p>
+
+  <h3 id="sec-start">Three branches</h3>
+  <ul>
+    <li><b>Scramble</b> — scramble a solved cube using letter pairs for practice.</li>
+    <li><b>Memorize</b> — pairs hidden (derive) or shown (memorise), edges and corners side by side, timed per group or together.</li>
+    <li><b>Execute</b> — pairs hidden or shown, timed or not; solve your physical cube.</li>
+  </ul>
+  <p>Flow: Scramble &rarr; Memorize &rarr; Execute.</p>
+
+  <h3 id="sec-speffz">Speffz lettering</h3>
+  <ul>
+    <li>Letters run A&ndash;X, clockwise around each face (U, L, F, R, B, D), from a fixed start piece.</li>
+    <li>Corners and edges each have their own A&ndash;X.</li>
+    <li>A piece's <b>reference letter</b> is the U/D sticker (or F/B for middle-slice edges) — that's the letter the trainer names it by.</li>
+  </ul>
+  <div class="diagram-row">${docSpeffzDiagram()}</div>
+  <details class="disclose"><summary>Full letter tables</summary>
+  <p style="font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:0;">Corners</p>
+  ${speffzTableHTML('corner')}
+  <p style="font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:0;">Edges</p>
+  ${speffzTableHTML('edge')}
+  </details>
+
+  <h3 id="sec-pieces">Buffers, Helpers, and Methods</h3>
+  <ul>
+    <li>Your <b>buffer</b> is the piece you track; a <b>helper</b> is the piece a pair sends it to. Two shots = one pair = one algorithm.</li>
+  </ul>
+  <p style="font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:0;">Worked example — Old Pochmann corners, pair "PB"</p>
+  <div class="diagram-row">${docPBDemo()}</div>
+
+  <p style="font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:0;">Corners</p>
+  <div class="diagram-row">${docMethodDiagram('corner','op','P')}${docMethodDiagram('corner','style3','B')}</div>
+  <p style="font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:0;">Edges</p>
+  <div class="diagram-row">${docMethodDiagram('edge','op','D')}${docMethodDiagram('edge','m2','A')}${docMethodDiagram('edge','style3','B')}</div>
+
+  <div class="tbl"><table><thead><tr><th>Method</th><th>Group</th><th>Default buffer</th><th>Ref. letter</th></tr></thead><tbody>
+    <tr><td>Old Pochmann</td><td>Corners</td><td>UBL</td><td><span class="k">A</span></td></tr>
+    <tr><td>Orozco / EKA / 3-Style</td><td>Corners</td><td>UFR</td><td><span class="k">C</span></td></tr>
+    <tr><td>Old Pochmann</td><td>Edges</td><td>UR</td><td><span class="k">B</span></td></tr>
+    <tr><td>Orozco / EKA / 3-Style</td><td>Edges</td><td>UF</td><td><span class="k">C</span></td></tr>
+    <tr><td>M2</td><td>Edges</td><td>DF</td><td><span class="k">U</span></td></tr>
+  </tbody></table></div>
+  <p>Buffers change independently of method. Editing a parity piece by hand switches the alg to Custom.</p>
+
+  <h3 id="sec-parity">Parity</h3>
+  <ul>
+    <li>Parity happens when an odd number of edge/corner swaps solves the cube.</li>
+    <li>A parity algorithm swaps two corners and two edges to solve the cube. It runs <b>last</b> in a
+    solution (and therefore <b>first</b> when scrambling).</li>
+    <li>Your corner method determines the alg you should use:</li>
+  </ul>
+  <div class="tbl"><table><thead><tr><th>Corner method</th><th>Parity alg</th></tr></thead><tbody>
+    <tr><td>Old Pochmann</td><td><b>R-perm</b></td></tr>
+    <tr><td>Orozco / EKA / 3-Style</td><td><b>J-perm</b></td></tr>
+  </tbody></table></div>
+  <div class="diagram-row">${docParityDiagram('rperm')}${docParityDiagram('jperm')}</div>
+  <p class="note">Override any of it in the parity dropdowns — the solution recomputes around whatever
+  you pick. Your own buffer's stickers can never be shot as a helper, so a mis-oriented buffer breaks in
+  elsewhere instead of twisting in place.</p>
+
+  <h3 id="sec-credits">Credits</h3>
+  <details class="disclose" open><summary>Cube model, lettering, methods, licence</summary>
+  <p><b>Cube model and move tables</b></p>
+  <ul>
+    <li><a href="https://github.com/ldez/cubejs" target="_blank" rel="noopener">cube.js</a> — cubie
+    representation, move tables and facelet indices. MIT licence, reproduced below.</li>
+    <li><a href="http://kociemba.org/cube.htm" target="_blank" rel="noopener">Herbert Kociemba</a> —
+    the corner/edge permutation-and-orientation model this trainer relies on.</li>
+  </ul>
+  <div class="lic">Copyright (c) 2013-2017 Petri Lehtinen &lt;petri@digip.org&gt;<br>
+  Copyright (c) 2018 Ludovic Fernandez<br><br>
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+  associated documentation files (the "Software"), to deal in the Software without restriction,
+  including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+  subject to the following conditions:<br><br>
+  The above copyright notice and this permission notice shall be included in all copies or substantial
+  portions of the Software.<br><br>
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+  LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+  NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</div>
+
+  <p><b>Lettering</b></p>
+  <ul>
+    <li><b>Speffz</b> — proposed by <b>Ville Seppänen</b> and <b>Rob Holt</b> in 2010, per the
+    <a href="https://www.speedsolving.com/wiki/index.php/Speffz" target="_blank" rel="noopener">Speedsolving wiki</a>,
+    cross-checked against
+    <a href="https://github.com/Voltara/vcube/blob/master/doc/speffz.md" target="_blank" rel="noopener">Voltara's vcube notes</a>.</li>
+  </ul>
+
+  <p><b>Methods</b></p>
+  <ul>
+    <li><b>Old Pochmann</b>, <b>M2</b> — <b>Stefan Pochmann</b>
+    (<a href="https://www.speedsolving.com/wiki/index.php/Classic_Pochmann" target="_blank" rel="noopener">wiki</a>,
+    <a href="https://www.speedsolving.com/wiki/index.php?title=M2%2FR2" target="_blank" rel="noopener">wiki</a>).</li>
+    <li><b>3-Style (Beyer&ndash;Hardwick)</b> — <b>Chris Hardwick</b> and <b>Daniel Beyer</b>, ~2009
+    (<a href="https://www.speedsolving.com/wiki/index.php/Beyer-Hardwick_Method" target="_blank" rel="noopener">wiki</a>).</li>
+    <li><b>Orozco</b> — <b>Gabriel Alejandro Orozco Casillas</b>, popularised by <b>Jayden McNeill</b>
+    (<a href="https://www.speedsolving.com/wiki/index.php?title=Orozco_method" target="_blank" rel="noopener">wiki</a>).
+    <b>Eka</b> is an edge-focused variant of Orozco using the same buffer-to-helper commutator
+    approach (proposer unknown) —
+    (<a href="https://www.speedsolving.com/wiki/index.php/Eka" target="_blank" rel="noopener">wiki</a>).</li>
+    <li><b>Video tutorials</b> — <a href="https://www.jperm.net/bld" target="_blank" rel="noopener">J Perm's
+    BLD guide</a> links out to walkthroughs for Old Pochmann, M2 and 3-Style/Orozco-style corner and edge solving.</li>
+  </ul>
+
+  <p><b>Conventions</b></p>
+  <ul>
+    <li>Move notation and colour scheme follow
+    <a href="https://www.worldcubeassociation.org/regulations/" target="_blank" rel="noopener">WCA regulations</a>.</li>
+    <li>The R-perm/J-perm parity pairs and the parity-runs-last rule were specified by <b>Louis</b>, who commissioned this trainer.</li>
+  </ul>
+
+  <p><b>Typefaces</b></p>
+  <ul>
+    <li><b>Instrument Sans</b> (Rodrigo Fuenzalida, Jordan Egstad) and <b>IBM Plex Mono</b> (Mike Abbink,
+    Bold Monday for IBM) — both SIL Open Font License, served by
+    <a href="https://fonts.google.com" target="_blank" rel="noopener">Google Fonts</a>.</li>
+  </ul>
+  </details>
+  <p class="note">Everything else — solution generator, validator, parity model, diagrams — was written
+  for this trainer. No algorithm sets, scrambles or solutions are bundled from anywhere.</p>`;
+}
+function openDocs(){
+  $('docsBody').innerHTML = docsHTML();
+  $('docsOverlay').hidden = false;
+  $('docsOverlay').scrollTop = 0;
+  document.body.style.overflow='hidden';
+  $('docsClose').onclick = closeDocs;
+  $('docsBody').querySelectorAll('.toc button').forEach(btn=>{
+    btn.onclick = () => {
+      const el = $(btn.dataset.go);
+      if (el) $('docsOverlay').scrollTo({ top: el.offsetTop - 16, behavior:'smooth' });
+    };
+  });
+  $('docsClose').focus();
+}
+function closeDocs(){
+  $('docsOverlay').hidden = true;
+  document.body.style.overflow='';
+}
+
+/* ---------- wiring ---------- */
+$('infoBtn').onclick = openDocs;
+function updateSetupSummary(){
+  const c = methodOf('corner'), e = methodOf('edge');
+  $('setupSummary').innerHTML =
+    `${c.name} corners <b>${bufRef('corner')}</b> · ${e.name} edges <b>${bufRef('edge')}</b>`
+    + ` · ${PARITY_ALGS[parityAlgSel.value].name} parity · ${orderSel.value==='edges'?'edges then corners':'corners then edges'}`;
+}
+$('setupToggle').onclick = () => {
+  const body = $('setupBody'), open = body.hidden;
+  body.hidden = !open;
+  $('setupToggle').setAttribute('aria-expanded', String(open));
+};
+$('prevScrambleBtn').onclick = prevScramble;
+$('nextScrambleBtn').onclick = nextScramble;
+$('newScrambleBtn').onclick = newScramble;
+$('applyScrambleBtn').onclick = () => { const v=$('customScrambleInput').value.trim(); if (v) applyScramble(v); };
+$('copyScrambleBtn').onclick = async () => { try{ await navigator.clipboard.writeText(app.scramble); }catch(e){} };
+cornerMethodSel.addEventListener('change', () => { applyMethodDefaults('corner'); recomputeSolution(); goHome(); });
+edgeMethodSel.addEventListener('change',  () => { applyMethodDefaults('edge');  recomputeSolution(); goHome(); });
+parityAlgSel.addEventListener('change', () => { applyParityAlg(); recomputeSolution(); goHome(); });
+[cornerBufSel, edgeBufSel].forEach(s => s.addEventListener('change', () => { recomputeSolution(); goHome(); }));
+[cornerP1Sel, cornerP2Sel, edgeP1Sel, edgeP2Sel].forEach(s =>
+  s.addEventListener('change', () => { parityAlgSel.value='custom'; recomputeSolution(); goHome(); }));
+orderSel.addEventListener('change', goHome);
+memoShowSel.addEventListener('change', () => {
+  if (app.mode==='memo') app.memoReveal = memoShowSel.value==='shown';
+  render();
+});
+[memoStageSel, execShowSel].forEach(s => s.addEventListener('change', render));
+[memoTimed, execTimed].forEach(c => c.addEventListener('change', render));
+vizSel.addEventListener('change', renderViz);
+letterToggle.addEventListener('change', renderViz);
+$('stepPrev').onclick = () => { app.viz.idx = Math.max(0, app.viz.idx-1); renderViz(); };
+$('stepNext').onclick = () => { app.viz.idx = Math.min(app.viz.steps.length-1, app.viz.idx+1); renderViz(); };
+
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown', e => {
+  if (!$('docsOverlay').hidden){
+    if (e.key === 'Escape'){ e.preventDefault(); closeDocs(); }
+    return;
+  }
+  const el = document.activeElement;
+  const typing = el && (el.tagName==='INPUT' || el.tagName==='TEXTAREA' || el.tagName==='SELECT');
+  if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+
+  if (e.key === 'Enter' && app.mode==='scramble' && (!el || el.tagName !== 'BUTTON')){
+    e.preventDefault(); scrambleAdvance(); return;
+  }
+  if (e.key==='ArrowRight' || e.key==='ArrowLeft' || e.key==='ArrowDown' || e.key==='ArrowUp'){
+    const btns = [
+      ...document.querySelectorAll('#modePanel button'),
+      ...document.querySelectorAll('.step-controls:not([hidden]) button')
+    ].filter(b=>!b.disabled && b.offsetParent!==null);
+    if (!btns.length) return;
+    e.preventDefault();
+    const i = btns.indexOf(el);
+    const fwd = (e.key==='ArrowRight' || e.key==='ArrowDown');
+    const next = i === -1 ? (fwd ? 0 : btns.length-1) : (i + (fwd?1:-1) + btns.length) % btns.length;
+    btns[next].focus();
+  }
+});
+
+applyMethodDefaults('corner'); applyMethodDefaults('edge');
+newScramble();
+updateSetupSummary();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
