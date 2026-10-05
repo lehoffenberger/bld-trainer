@@ -80,10 +80,13 @@
   header.top{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
   header.top h1{ font-size:1.45rem; letter-spacing:-.015em; line-height:1.2; }
   header.top .tag{ color:var(--text-dim); font-size:.85rem; }
-  .phase-pill{
-    display:inline-flex; align-items:center; gap:6px; font-size:.7rem;
-    text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim);
-    border:1px solid var(--border); border-radius:100px; padding:3px 10px;
+  .phase-pill{ font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); }
+  .t-short{ display:none; }
+  @media (max-width:600px){
+    .t-full, header.top .tag, .phase-pill{ display:none; }
+    .t-short{ display:inline; }
+    header.top{ align-items:center; margin-bottom:12px; }
+    body{ padding-block:16px 40px; padding-inline:14px; }
   }
 
   .panel{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow); }
@@ -92,7 +95,10 @@
 
   .settings-cols{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:22px; }
   .setup-head{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-  .setup-summary{ flex:1; min-width:150px; font-size:.79rem; color:var(--text-dim); line-height:1.45; }
+  .setup-summary{ flex:1; min-width:150px; display:flex; flex-wrap:wrap; gap:5px; }
+  .sum-chip{ font-size:.74rem; color:var(--text-dim); background:var(--surface-2); border:1px solid var(--border);
+    border-radius:100px; padding:2px 9px; white-space:nowrap; }
+  .sum-chip b{ color:var(--text); font-weight:600; }
   #setupBody[hidden]{ display:none; }
   button.disclosure{ display:inline-flex; align-items:center; gap:7px; }
   button.disclosure .chev{ display:inline-block; transition:transform .15s ease; }
@@ -125,7 +131,33 @@
   button:disabled{ opacity:.4; cursor:not-allowed; }
 
   main.layout{ display:grid; grid-template-columns:minmax(300px,420px) 1fr; gap:18px; margin-top:16px; align-items:start; }
-  @media (max-width:880px){ main.layout{ grid-template-columns:1fr; } }
+  body:not([data-mode="home"]) #scramblePanel{ display:none; }
+  .viz-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  button.chip-btn{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; font-weight:600; padding:5px 10px; min-height:32px; }
+  button.chip-btn[aria-pressed="true"]{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+  @media (max-width:880px){
+    main.layout{ display:flex; flex-direction:column; align-items:stretch; }
+    main.layout > .stack{ display:contents; }
+    #vizPanel{ order:1; } #modePanel{ order:2; } #scramblePanel{ order:3; }
+    /* memo on phones: the cube is drawn inside the memo card, right above the fields,
+       so whatever scrolls (this page, or the app it's embedded in) moves them together */
+    body[data-mode="memo"] #vizPanel{ display:none; }
+    body[data-mode="memo"] .memo-cube{ display:block; }
+    body[data-mode="memo"] #modePanel{ padding:8px 14px 12px; gap:8px; }
+    body[data-mode="memo"] #modePanel > h3{ display:none; }
+    body[data-mode="memo"] .entry-block{ margin-bottom:4px !important; }
+    body[data-mode="scramble"] #vizPanel svg.net{ max-height:38vh; }
+  }
+  /* iOS zooms in on any text box under 16px, which throws the whole layout off */
+  @media (pointer:coarse){ select, input[type=text]{ font-size:16px; } }
+  .entry-input{ scroll-margin-bottom:24px; }
+  .memo-cube{ display:none; position:relative; margin:0; }
+  .memo-cube svg.net{ display:block; margin:0 auto; width:100%; max-height:min(22vh, 170px); }
+  .memo-cube .chip-btn{ position:absolute; top:0; right:0; }
+  .entry-block.is-done .entry-input, .entry-block.is-done .status-row{ display:none; }
+  .entry-block.is-done .pair-chip{ font-size:.8rem; padding:1px 7px; }
+  .entry-block.is-done .pairs-display{ margin-top:3px; }
+  .entry-block.is-done .grp{ cursor:pointer; color:var(--good); }
 
   .scramble-line{ font-size:1rem; letter-spacing:.02em; word-break:break-word; line-height:1.6; }
   .hist-pos{ font-size:.72rem; color:var(--text-dim); }
@@ -157,7 +189,9 @@
   .hint{ font-size:.82rem; color:var(--text-dim); line-height:1.5; }
   .status{ font-size:.84rem; margin-top:7px; line-height:1.5; }
   .status.good{ color:var(--good); } .status.bad{ color:var(--bad); } .status.dim{ color:var(--text-dim); }
-  .entry-input{ margin-top:5px; }
+  .entry-input{ margin-top:6px; font-size:1rem; }
+  .pairs-display:empty{ display:none; }
+  .status:empty{ min-height:0; }
   .status-row{ display:flex; align-items:flex-start; gap:10px; justify-content:space-between; }
   .status-row .status{ flex:1; }
   button.hint-btn{ padding:4px 10px; font-size:.75rem; font-weight:500; flex:none; margin-top:5px; }
@@ -173,6 +207,19 @@
   details.disclose summary:hover{ color:var(--text); }
   .blind-note{ border:1px dashed var(--border-strong); border-radius:10px; padding:14px; font-size:.86rem; color:var(--text-dim); text-align:center; }
   footer{ margin-top:32px; font-size:.75rem; color:var(--text-dim); line-height:1.6; }
+  @media (hover:none) and (pointer:coarse){ footer, .kbd-hint{ display:none; } }
+  .next-step{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .next-step .what{ flex:1; min-width:140px; }
+  .next-step .lbl{ font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); }
+  .next-step .sub{ font-size:.76rem; color:var(--text-dim); margin-top:2px; }
+  .next-step button.primary{ padding:14px 20px; font-size:1rem; }
+  .pair-chip.tap{ cursor:pointer; }
+  button.big-stop{ width:100%; padding:22px; font-size:1.15rem; }
+  .tap-stop{ position:fixed; inset:0; z-index:70; border:none; border-radius:0; background:var(--bg); color:var(--text);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; font-weight:500;
+    touch-action:manipulation; -webkit-user-select:none; user-select:none; }
+  .tap-stop .timer{ font-size:3.4rem; }
+  .tap-stop .msg{ font-size:1rem; color:var(--text-dim); }
 
   #docsOverlay{ position:fixed; inset:0; z-index:60; background:var(--bg);
     overflow-y:auto; padding-inline:20px; padding-block:26px 90px; }
@@ -196,9 +243,9 @@
     background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; color:var(--text-dim); }
   .docs .note{ border-left:3px solid var(--border-strong); padding:2px 0 2px 14px; color:var(--text-dim); font-size:.88rem; margin:14px 0; }
   .toc{ display:flex; flex-wrap:wrap; gap:6px; margin:16px 0 4px; }
-  .toc button{ font-size:.74rem; font-weight:500; padding:5px 10px; }
+  .toc button{ font-size:.8rem; font-weight:500; padding:9px 13px; min-height:40px; }
   .docs details.disclose{ margin:10px 0; }
-  .docs details.disclose summary{ font-size:.8rem; }
+  .docs details.disclose summary{ font-size:.86rem; padding:10px 0; }
   .diagram-row{ display:flex; flex-wrap:wrap; gap:18px; margin:12px 0 6px; }
   .diagram{ display:flex; flex-direction:column; align-items:center; gap:7px; width:168px; }
   .diagram svg{ width:150px; height:auto; }
@@ -210,6 +257,10 @@
   @supports (padding: env(safe-area-inset-top)){
     body{ padding-top:max(26px, env(safe-area-inset-top)); padding-bottom:max(60px, env(safe-area-inset-bottom));
           padding-left:max(20px, env(safe-area-inset-left)); padding-right:max(20px, env(safe-area-inset-right)); }
+    @media (max-width:600px){
+      body{ padding-top:max(16px, env(safe-area-inset-top)); padding-bottom:max(40px, env(safe-area-inset-bottom));
+            padding-left:max(14px, env(safe-area-inset-left)); padding-right:max(14px, env(safe-area-inset-right)); }
+    }
   }
 </style>
 </head>
@@ -218,7 +269,7 @@
 
 <header class="top">
   <div>
-    <h1>Rubik's Cube 3x3 Blindfold Practice Tool</h1>
+    <h1><span class="t-full">Rubik's Cube 3x3 Blindfold Practice Tool</span><span class="t-short">BLD Trainer</span></h1>
     <div class="tag">Guided Scrambling, Memorization, and Execution Trainer</div>
   </div>
   <div class="row" style="gap:8px;">
@@ -239,7 +290,7 @@
     <div class="settings-section">
       <div class="sec-title">Scramble</div>
       <div class="row">
-        <input type="text" id="customScrambleInput" placeholder="Paste a scramble, e.g. R U R' F2 D L' B U2…" style="flex:1;min-width:200px;width:auto;">
+        <input type="text" id="customScrambleInput" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="Paste a scramble, e.g. R U R' F2 D L' B U2…" style="flex:1;min-width:200px;width:auto;">
         <button id="applyScrambleBtn">Use this scramble</button>
       </div>
     </div>
@@ -272,9 +323,8 @@
         <select id="memoShowSel"><option value="hidden">Hidden — derive them</option><option value="shown">Shown — memorize them</option></select>
       </label>
       <label class="field"><span class="lbl">Memo timer</span>
-        <select id="memoStageSel"><option value="split">Timed per group</option><option value="together">One timer</option></select>
+        <select id="memoTimerSel"><option value="off">Off</option><option value="split">Per group</option><option value="together">One timer</option></select>
       </label>
-      <label class="check"><input type="checkbox" id="memoTimed"> Timed</label>
     </div>
     <div class="settings-section">
       <div class="sec-title">Execution &amp; view</div>
@@ -288,7 +338,9 @@
       <label class="field"><span class="lbl">Visualization</span>
         <select id="vizSel"><option value="net">2D net</option><option value="iso" selected>3D floating stickers</option></select>
       </label>
-      <label class="check"><input type="checkbox" id="execTimed"> Exec timed</label>
+      <label class="field"><span class="lbl">Exec timer</span>
+        <select id="execTimerSel"><option value="off">Off</option><option value="on">On</option></select>
+      </label>
       <label class="check"><input type="checkbox" id="letterToggle"> Speffz letters on diagram</label>
     </div>
       </div>
@@ -297,8 +349,11 @@
 
 <main class="layout">
   <div class="stack">
-    <section class="panel stack">
-      <h3 id="vizTitle">Cube state</h3>
+    <section class="panel stack" id="vizPanel">
+      <div class="viz-head">
+        <h3 id="vizTitle">Cube state</h3>
+        <button class="chip-btn" id="lettersBtn" aria-pressed="false" title="Show Speffz letters">ABC</button>
+      </div>
       <div class="net-wrap" id="netWrap"></div>
       <div class="step-controls" id="stepControls" hidden>
         <button id="stepPrev">◀</button>
@@ -306,7 +361,7 @@
         <button id="stepNext">▶</button>
       </div>
     </section>
-    <section class="panel stack">
+    <section class="panel stack" id="scramblePanel">
       <div class="row" style="justify-content:space-between;align-items:baseline;">
         <h3>Scramble</h3>
         <span class="hist-pos mono" id="histPos"></span>
@@ -325,7 +380,7 @@
 
 <footer>
   Pieces are tracked as whole cubies, so every state shown is a cube you could actually hold.
-  <span class="kbd-hint">Keyboard: <kbd>←</kbd> <kbd>→</kbd> move between buttons, <kbd>Enter</kbd> advances the scramble walkthrough.</span>
+  <span class="kbd-hint">Keyboard: <kbd>←</kbd> <kbd>→</kbd> move between buttons, <kbd>Enter</kbd> advances the scramble walkthrough, <kbd>Space</kbd> starts and stops the execution timer.</span>
 </footer>
 
 <script>
@@ -622,7 +677,7 @@ function opText(op, kind){
 }
 function opLabel(op){
   if (op.cls==='parity')
-    return 'Parity ' + ['corner','edge'].map(k=>`${kindName(k).toLowerCase()} ${opText(op,k)}`).join(', ');
+    return `Parity (${parityName()}): ${parityDetail(op)}`;
   return `${kindName(op.kind).slice(0,-1)} ${opText(op,op.kind)}` + (op.cls==='twist' ? ' (twist)' : '');
 }
 function groupItems(kind){
@@ -777,8 +832,8 @@ const cornerMethodSel=$('cornerMethodSel'), edgeMethodSel=$('edgeMethodSel'),
       cornerP1Sel=$('cornerP1Sel'), cornerP2Sel=$('cornerP2Sel'),
       edgeP1Sel=$('edgeP1Sel'), edgeP2Sel=$('edgeP2Sel'),
       cornerMethodNote=$('cornerMethodNote'), edgeMethodNote=$('edgeMethodNote'),
-      orderSel=$('orderSel'), vizSel=$('vizSel'), parityAlgSel=$('parityAlgSel'), memoShowSel=$('memoShowSel'), memoStageSel=$('memoStageSel'),
-      memoTimed=$('memoTimed'), execShowSel=$('execShowSel'), execTimed=$('execTimed'),
+      orderSel=$('orderSel'), vizSel=$('vizSel'), parityAlgSel=$('parityAlgSel'), memoShowSel=$('memoShowSel'), memoTimerSel=$('memoTimerSel'), execTimerSel=$('execTimerSel'),
+      execShowSel=$('execShowSel'),
       letterToggle=$('letterToggle'), netWrap=$('netWrap'), scrambleLine=$('scrambleLine'),
       modePanel=$('modePanel'), phasePill=$('phasePill'), stepControls=$('stepControls'),
       stepLabel=$('stepLabel'), vizTitle=$('vizTitle');
@@ -1041,20 +1096,35 @@ function stopTimer(){
 }
 
 /* ---------- render ---------- */
+function parityName(){ return PARITY_ALGS[parityAlgSel.value].name; }
+function parityDetail(op){ return ['corner','edge'].map(k=>`${kindName(k).toLowerCase()} ${opText(op,k)}`).join(' \u00b7 '); }
+const isNarrow = () => window.matchMedia('(max-width:880px)').matches;
+function pinViz(){            // on phones, start each screen with the cube at the top
+  if (!isNarrow()) return;
+  const target = app.mode==='memo' ? modePanel : $('vizPanel');
+  target.scrollIntoView({block:'start'});
+}
 function render(){
+  document.body.dataset.mode = app.mode;
   phasePill.textContent = { home:'setup', memo:'memo', exec:'execution', scramble:'scrambling', review:'review' }[app.mode];
   scrambleLine.textContent = app.scramble || '—';
   syncHistoryUI();
   renderViz();
   ({ home:renderHome, memo:renderMemo, exec:renderExec, scramble:renderScrambleMode, review:renderReview })[app.mode]();
 }
-function renderViz(){
-  const steps = app.viz.steps.length ? app.viz.steps : [{...scrambledOcc(), label:'Scrambled'}];
-  const step = steps[Math.min(app.viz.idx, steps.length-1)];
+function cubeSVG(step){
   const facelets = colorsFromOccupants(step.occC, step.occE);
   const showL = letterToggle.checked;
   const labels = showL ? labelsFromOccupants(step.occC, step.occE) : [];
-  netWrap.innerHTML = vizSel.value==='net' ? buildNetSVG(facelets, labels, showL) : build3DSVG(facelets, labels, showL);
+  return vizSel.value==='net' ? buildNetSVG(facelets, labels, showL) : build3DSVG(facelets, labels, showL);
+}
+function renderViz(){
+  const steps = app.viz.steps.length ? app.viz.steps : [{...scrambledOcc(), label:'Scrambled'}];
+  const step = steps[Math.min(app.viz.idx, steps.length-1)];
+  $('lettersBtn').setAttribute('aria-pressed', String(letterToggle.checked));
+  netWrap.innerHTML = cubeSVG(step);
+  const mc = $('memoCubeArt');
+  if (mc){ mc.innerHTML = cubeSVG(scrambledOcc()); $('memoLettersBtn').setAttribute('aria-pressed', String(letterToggle.checked)); }
   stepControls.hidden = !app.viz.stepping;
   if (app.viz.stepping) stepLabel.textContent = `${app.viz.idx} / ${steps.length-1} · ${step.label}`;
 }
@@ -1078,10 +1148,10 @@ function pairsBlock(kind){
 }
 function entryBlock(kind){
   return `<div class="grp">${kindName(kind)} — your pairs</div>
-    <input type="text" class="mono entry-input" id="entry-${kind}" placeholder="type pairs, e.g. ${kind==='corner'?'DV MA BS':'VL NB XP'} …" value="${app.entryText[kind]}">
     <div class="pairs-display" id="chips-${kind}"></div>
     <div class="status-row"><div class="status" id="status-${kind}"></div>
-      <button class="hint-btn" id="hint-${kind}">${app.hint[kind]?'Hide hint':'Hint'}</button></div>`;
+      <button class="hint-btn" id="hint-${kind}">${app.hint[kind]?'Hide hint':'Hint'}</button></div>
+    <input type="text" class="mono entry-input" id="entry-${kind}" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="type pairs, e.g. ${kind==='corner'?'DV MA BS':'VL NB XP'} …" value="${app.entryText[kind]}">`;
 }
 function wireEntry(kind){
   const el = $(`entry-${kind}`);
@@ -1120,7 +1190,9 @@ function renderHome(){
   $('toScramble').onclick = enterScrambleMode;
 }
 
-const memoStaged = () => memoStageSel.value==='split';
+const memoStaged = () => memoTimerSel.value==='split';
+const memoTimed = { get checked(){ return memoTimerSel.value !== 'off'; } };
+const execTimed = { get checked(){ return execTimerSel.value === 'on'; } };
 const memoTimerKey = () => !memoStaged() ? 'memo' : (groupOrder()[app.memoStageIdx]==='edge' ? 'memoEdge' : 'memoCorner');
 function enterMemo(){
   app.mode='memo'; app.memoStageIdx=0; app.memoDone=false; app.memoGroupDone={};
@@ -1129,7 +1201,7 @@ function enterMemo(){
   app.memoReveal = memoShowSel.value==='shown';
   app.times={memoEdge:0,memoCorner:0,memo:0,exec:0};
   setViz([{...scrambledOcc(), label:'Scrambled'}], 0, false, 'Cube state');
-  render();
+  render(); pinViz();
   if (memoTimed.checked) startTimer(memoTimerKey());
 }
 function renderMemo(){
@@ -1138,7 +1210,9 @@ function renderMemo(){
   const shown = app.memoReveal;
   app.memoGroupDone = app.memoGroupDone || {};
 
-  let html = `<h3>Memo</h3>`;
+  let html = `<div class="memo-cube"><div id="memoCubeArt">${cubeSVG(scrambledOcc())}</div>
+      <button class="chip-btn" id="memoLettersBtn" aria-pressed="${letterToggle.checked}" title="Show Speffz letters">ABC</button></div>
+    <h3>Memo</h3>`;
   if (memoTimed.checked){
     html += `<div class="timers">`;
     if (staged){
@@ -1159,12 +1233,14 @@ function renderMemo(){
     $('memoToExec').onclick = enterExec; $('memoReview').onclick = enterReview; $('memoNext').onclick = newScramble;
     return;
   }
-  html += shown ? kinds.map(pairsBlock).join('')
-                : `<div class="blind-note">Pairs hidden \u2014 read the cube state and derive them yourself.</div>`;
-  if (app.sol.parityOp)
-    html += `<div class="legend">This scramble has parity: after the pairs, one alg swaps ${['corner','edge'].map(k=>`${kindName(k).toLowerCase()} ${opText(app.sol.parityOp,k)}`).join(' and ')} to finish.</div>`;
-  html += `<hr class="divider">`;
-  html += kinds.map(k => `<div style="margin-bottom:10px;">${entryBlock(k)}</div>`).join('');
+  if (shown){
+    html += kinds.map(pairsBlock).join('');
+    if (app.sol.parityOp)
+      html += `<div class="legend">This scramble has parity: after the pairs, ${parityName()} swaps ${parityDetail(app.sol.parityOp)}.</div>`;
+    html += `<hr class="divider">`;
+  }
+  html += kinds.map(k => `<div class="entry-block${app.memoGroupDone[k] ? ' is-done' : ''}" id="block-${k}" style="margin-bottom:10px;">${entryBlock(k)}</div>`).join('');
+  if (!shown) html += `<div class="legend" style="margin-bottom:10px;">Pairs hidden \u2014 read the cube and derive them.</div>`;
   html += `<div class="row">
       <button class="primary" id="memoFinish">Done memorizing</button>
       <button id="memoReveal">${shown ? 'Hide pairs' : 'Show pairs'}</button>
@@ -1185,10 +1261,18 @@ function renderMemo(){
       if (app.memoGroupDone[k] || !validateEntry(k, el.value).solved) return;
       app.memoGroupDone[k] = true;
       if (staged && app.activeTimer === keyOf(k)) stopTimer();
+      $(`block-${k}`).classList.add('is-done');
       const next = kinds.find(o => !app.memoGroupDone[o]);
-      if (next) $(`entry-${next}`).focus();
+      if (next) $(`entry-${next}`).focus({preventScroll:true});
+    });
+    // tap a finished group's heading to open its field again
+    $(`block-${k}`).querySelector('.grp').addEventListener('click', () => {
+      const blk = $(`block-${k}`);
+      if (!blk.classList.contains('is-done')) return;
+      blk.classList.remove('is-done'); el.focus({preventScroll:true});
     });
   });
+  if ($('memoLettersBtn')) $('memoLettersBtn').onclick = () => { letterToggle.checked = !letterToggle.checked; renderViz(); };
   const firstOpen = kinds.find(k => !app.memoGroupDone[k]);
   if (firstOpen) $(`entry-${firstOpen}`).focus({preventScroll:true});
 
@@ -1203,22 +1287,34 @@ function enterExec(){
   app.execRevealed = execShowSel.value==='shown';
   app.times.exec = 0;
   setViz([{...scrambledOcc(), label:'Scrambled'}], 0, false, 'Cube state');
-  render();
+  render(); pinViz();
 }
+function execStart(){ if (app.execStarted || app.execDone) return; app.execStarted=true; render(); if (execTimed.checked) startTimer('exec'); }
+function execStop(){ if (!app.execStarted || app.execDone) return; stopTimer(); app.execDone=true; render(); }
 function renderExec(){
+  const running = app.execStarted && !app.execDone;
   let html = `<h3>Execution</h3>`;
-  if (execTimed.checked) html += `<div class="timers">${timerBlock('exec','Execution')}</div>`;
+  if (running && execTimed.checked && !app.execRevealed){
+    // blindfolded and timed: the whole screen is the stop button
+    html += `<button class="tap-stop" id="execTapStop" aria-label="Stop the timer">
+        <span class="timer mono" data-timer="exec">${fmt(app.times.exec)}</span>
+        <span class="msg">Tap anywhere to stop</span></button>`;
+  }
+  else if (execTimed.checked) html += `<div class="timers">${timerBlock('exec','Execution')}</div>`;
   html += app.execRevealed ? groupOrder().map(pairsBlock).join('')
                            : `<div class="blind-note">Solution hidden — execute from memory.</div>`;
   html += `<hr class="divider"><div class="row">`;
-  if (!app.execStarted && !app.execDone) html += `<button class="primary" id="execStart">${execTimed.checked ? 'Start execution' : 'Begin'}</button>`;
-  else if (!app.execDone) html += `<button class="primary" id="execStop">Stop — done</button>`;
+  if (!app.execStarted && !app.execDone) html += `<button class="primary big-stop" id="execStart">${execTimed.checked ? 'Start execution' : 'Begin'}</button>`;
+  else if (!app.execDone) html += `<button class="primary big-stop" id="execStop">Stop \u2014 done</button>`;
   else html += `<button class="primary" id="execReview">Review solution</button><button class="ghost" id="execNext">Next scramble</button>`;
   if (!app.execDone) html += `<button id="execReveal">${app.execRevealed ? 'Hide solution' : 'Reveal solution'}</button><button class="ghost" id="execBack">Back</button>`;
   html += `</div>`;
   modePanel.innerHTML = html;
-  if ($('execStart')) $('execStart').onclick = () => { app.execStarted=true; render(); if (execTimed.checked) startTimer('exec'); };
-  if ($('execStop')) $('execStop').onclick = () => { stopTimer(); app.execDone=true; render(); };
+  if ($('execStart')) $('execStart').onclick = execStart;
+  if ($('execStop')) $('execStop').onclick = execStop;
+  if ($('execTapStop')) $('execTapStop').addEventListener('pointerdown', e => {
+    e.preventDefault(); app.swallowClickUntil = performance.now() + 500; execStop();
+  });
   if ($('execReveal')) $('execReveal').onclick = () => { app.execRevealed=!app.execRevealed; render(); };
   if ($('execBack')) $('execBack').onclick = goHome;
   if ($('execReview')) $('execReview').onclick = enterReview;
@@ -1231,16 +1327,19 @@ function enterScrambleMode(){
   const {items, steps} = buildScrambleSequence();
   app.scrambleItems = items; app.scrambleIdx = 0;
   setViz(steps, 0, true, 'Follow along from solved');
-  render();
+  render(); pinViz();
 }
 function scrambleAdvance(){
   if (app.mode!=='scramble') return;
   if (app.scrambleIdx >= app.scrambleItems.length){ enterMemo(); return; }  // done -> into memo
   app.scrambleIdx++; app.viz.idx = app.scrambleIdx; render();
 }
+function scrambleBack(){
+  if (app.mode!=='scramble') return;
+  app.scrambleIdx = Math.max(0, app.scrambleIdx-1); app.viz.idx = app.scrambleIdx; render();
+}
 function opDisplay(op){
-  if (op.cls==='parity')
-    return ['corner','edge'].map(k=>opText(op,k)).join(' + ');
+  if (op.cls==='parity') return parityName();
   return opText(op, op.kind);
 }
 /* render an ordered op list as labelled runs, so it's always clear whether a
@@ -1276,22 +1375,21 @@ function renderScrambleMode(){
   const items = app.scrambleItems;
   const done = app.scrambleIdx >= items.length;
   const cur = items[app.scrambleIdx];
-  let html = `<h3>Scramble from solved</h3>
-    <div class="hint">Start with a solved cube and execute these in order — your own algorithms, run backwards. The diagram shows exactly what your cube should look like after each one.</div>
-    <hr class="divider">
-    ${opRunsHTML(items, app.scrambleIdx)}
-    <hr class="divider">`;
+  let html = `<h3>Scramble from solved</h3>`;
   if (!done){
-    html += `<div class="row" style="align-items:center;">
-        <div style="flex:1;min-width:130px;">
-          <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);">Next \u2014 ${opWho(cur)}</div>
+    html += `<div class="next-step">
+        <div class="what">
+          <div class="lbl">Next (${app.scrambleIdx+1} of ${items.length}) \u2014 ${opWho(cur)}</div>
           <div class="timer mono">${opDisplay(cur)}</div>
+          ${cur.cls==='parity' ? `<div class="sub">${parityDetail(cur)}</div>` : ''}
         </div>
         <button class="primary" id="scrNext">Executed it \u25B6</button>
+      </div>
+      <div class="row">
         <button id="scrPrev" ${app.scrambleIdx===0?'disabled':''}>\u25C0 Back</button>
         <button class="ghost" id="scrAbort">Cancel</button>
       </div>
-      <div class="kbd-hint" style="margin-top:8px;"><kbd>Enter</kbd> for the next one \u00b7 <kbd>\u2190</kbd> <kbd>\u2192</kbd> move between buttons</div>`;
+      <div class="kbd-hint"><kbd>Enter</kbd> for the next one \u00b7 <kbd>\u2190</kbd> <kbd>\u2192</kbd> move between buttons</div>`;
   } else {
     html += `<div class="status good">\u2713 Your cube now matches the scramble.</div>
       <div class="row" style="margin-top:10px;">
@@ -1300,9 +1398,11 @@ function renderScrambleMode(){
       </div>
       <div class="kbd-hint" style="margin-top:8px;"><kbd>Enter</kbd> to start memo \u00b7 execution comes after</div>`;
   }
+  html += `<hr class="divider">${opRunsHTML(items, app.scrambleIdx)}
+    <div class="legend" style="margin-top:10px;">Start from a solved cube and do these in order: your own algorithms, run backwards. The cube shows what yours should look like after each one.</div>`;
   modePanel.innerHTML = html;
   if ($('scrNext')) $('scrNext').onclick = scrambleAdvance;
-  if ($('scrPrev')) $('scrPrev').onclick = () => { app.scrambleIdx=Math.max(0,app.scrambleIdx-1); app.viz.idx=app.scrambleIdx; render(); };
+  if ($('scrPrev')) $('scrPrev').onclick = scrambleBack;
   if ($('scrAbort')) $('scrAbort').onclick = goHome;
   if ($('scrMemo')) $('scrMemo').onclick = enterMemo;
   if ($('scrAnother')) $('scrAnother').onclick = newScramble;
@@ -1311,7 +1411,7 @@ function renderScrambleMode(){
 function enterReview(){
   stopTimer(); app.mode='review';
   setViz(buildSolveSteps(), 0, true, 'Solve, step by step');
-  render();
+  render(); pinViz();
 }
 function renderReview(){
   const staged = memoStaged();
@@ -1324,14 +1424,27 @@ function renderReview(){
     if (app.times.exec) html += timerBlock('exec','Execution');
     html += `</div>`;
   }
-  html += groupOrder().map(pairsBlock).join('');
-  html += `<div class="legend">Amber = parity · violet = a buffer twist/flip handled by its own alg.</div>
+  const ops = programOps();
+  for (const kind of groupOrder()){
+    const idx = ops.map((op,i)=>[op,i]).filter(([op])=>opTouches(op,kind));
+    html += `<div class="grp">${kindName(kind)} \u00b7 ${idx.length} algs</div><div class="pairs-display">` +
+      idx.map(([op,i]) => {
+        const step = i+1, extra = 'tap' + (app.viz.idx===step ? ' cur' : '');
+        return chipHTML({ text:opText(op,kind), cls:op.cls, tag: op.cls==='parity'?'parity':'' }, extra)
+          .replace('<span class="pair-chip', `<span data-step="${step}" role="button" tabindex="0" class="pair-chip`);
+      }).join('') + `</div>`;
+  }
+  html += `<div class="legend" style="margin-top:8px;">Tap a pair to see the cube right after it.</div>
     <hr class="divider"><div class="row">
       <button class="primary" id="revNext">Next scramble</button>
       <button class="ghost" id="revHome">Back to branches</button>
     </div>`;
   modePanel.innerHTML = html;
   $('revNext').onclick = newScramble; $('revHome').onclick = goHome;
+  modePanel.querySelectorAll('[data-step]').forEach(ch => {
+    const go = () => { const st = +ch.dataset.step; app.viz.idx = app.viz.idx===st ? 0 : st; render(); };
+    ch.onclick = go; ch.onkeydown = e => { if (e.key==='Enter' || e.key===' '){ e.preventDefault(); go(); } };
+  });
 }
 
 /* =========================================================================
@@ -1606,9 +1719,12 @@ function closeDocs(){
 $('infoBtn').onclick = openDocs;
 function updateSetupSummary(){
   const c = methodOf('corner'), e = methodOf('edge');
-  $('setupSummary').innerHTML =
-    `${c.name} corners <b>${bufRef('corner')}</b> · ${e.name} edges <b>${bufRef('edge')}</b>`
-    + ` · ${PARITY_ALGS[parityAlgSel.value].name} parity · ${orderSel.value==='edges'?'edges then corners':'corners then edges'}`;
+  $('setupSummary').innerHTML = [
+    `<b>Corners</b> ${c.name} \u00b7 ${bufRef('corner')}`,
+    `<b>Edges</b> ${e.name} \u00b7 ${bufRef('edge')}`,
+    `<b>${parityName()}</b> parity`,
+    orderSel.value==='edges' ? 'Edges first' : 'Corners first'
+  ].map(t => `<span class="sum-chip">${t}</span>`).join('');
 }
 $('setupToggle').onclick = () => {
   const body = $('setupBody'), open = body.hidden;
@@ -1626,17 +1742,29 @@ parityAlgSel.addEventListener('change', () => { applyParityAlg(); recomputeSolut
 [cornerBufSel, edgeBufSel].forEach(s => s.addEventListener('change', () => { recomputeSolution(); goHome(); }));
 [cornerP1Sel, cornerP2Sel, edgeP1Sel, edgeP2Sel].forEach(s =>
   s.addEventListener('change', () => { parityAlgSel.value='custom'; recomputeSolution(); goHome(); }));
-orderSel.addEventListener('change', goHome);
+orderSel.addEventListener('change', () => { updateSetupSummary(); goHome(); });
 memoShowSel.addEventListener('change', () => {
   if (app.mode==='memo') app.memoReveal = memoShowSel.value==='shown';
   render();
 });
-[memoStageSel, execShowSel].forEach(s => s.addEventListener('change', render));
-[memoTimed, execTimed].forEach(c => c.addEventListener('change', render));
+[memoTimerSel, execTimerSel, execShowSel].forEach(s => s.addEventListener('change', render));
 vizSel.addEventListener('change', renderViz);
 letterToggle.addEventListener('change', renderViz);
-$('stepPrev').onclick = () => { app.viz.idx = Math.max(0, app.viz.idx-1); renderViz(); };
-$('stepNext').onclick = () => { app.viz.idx = Math.min(app.viz.steps.length-1, app.viz.idx+1); renderViz(); };
+$('stepPrev').onclick = () => {
+  if (app.mode==='scramble') return scrambleBack();
+  app.viz.idx = Math.max(0, app.viz.idx-1); render();
+};
+$('stepNext').onclick = () => {
+  if (app.mode==='scramble'){ if (app.scrambleIdx < app.scrambleItems.length) scrambleAdvance(); return; }
+  app.viz.idx = Math.min(app.viz.steps.length-1, app.viz.idx+1); render();
+};
+$('lettersBtn').onclick = () => { letterToggle.checked = !letterToggle.checked; renderViz(); };
+
+
+// the tap that stops the exec timer must not also press whatever button lands under it
+document.addEventListener('click', e => {
+  if (app.swallowClickUntil && performance.now() < app.swallowClickUntil){ e.preventDefault(); e.stopPropagation(); }
+}, true);
 
 /* ---------- keyboard ---------- */
 document.addEventListener('keydown', e => {
@@ -1648,6 +1776,11 @@ document.addEventListener('keydown', e => {
   const typing = el && (el.tagName==='INPUT' || el.tagName==='TEXTAREA' || el.tagName==='SELECT');
   if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
 
+  if (e.key === ' ' && app.mode==='exec'){
+    e.preventDefault();
+    if (app.execStarted && !app.execDone) execStop(); else if (!app.execStarted) execStart();
+    return;
+  }
   if (e.key === 'Enter' && app.mode==='scramble' && (!el || el.tagName !== 'BUTTON')){
     e.preventDefault(); scrambleAdvance(); return;
   }
