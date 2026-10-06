@@ -561,13 +561,13 @@ const PARITY_ALGS = {
 const METHODS = {
   corner:{
     op:      { name:'Old Pochmann', buffer:'ULB', parityAlg:'rperm' },
-    style3:  { name:'Orozco / EKA / 3-Style', buffer:'URF', parityAlg:'jperm' },
+    style3:  { name:'Orozco / EKA / 3-Style', short:'3-Style', buffer:'URF', parityAlg:'jperm' },
     custom:  { name:'Custom', buffer:'ULB', parityAlg:'jperm' }
   },
   edge:{
     op:      { name:'Old Pochmann', buffer:'UR' },
     m2:      { name:'M2', buffer:'DF' },
-    style3:  { name:'Orozco / EKA / 3-Style', buffer:'UF' },
+    style3:  { name:'Orozco / EKA / 3-Style', short:'3-Style', buffer:'UF' },
     custom:  { name:'Custom', buffer:'UF' }
   }
 };
@@ -1824,8 +1824,8 @@ $('infoBtn').onclick = openDocs;
 function updateSetupSummary(){
   const c = methodOf('corner'), e = methodOf('edge');
   $('setupSummary').innerHTML = [
-    `<b>Corners</b> ${c.name} \u00b7 ${bufRef('corner')}`,
-    `<b>Edges</b> ${e.name} \u00b7 ${bufRef('edge')}`,
+    `<b>Corners</b> ${c.short || c.name} \u00b7 ${bufRef('corner')}`,
+    `<b>Edges</b> ${e.short || e.name} \u00b7 ${bufRef('edge')}`,
     `<b>${parityName()}</b> parity`,
     orderSel.value==='edges' ? 'Edges first' : 'Corners first'
   ].map(t => `<span class="sum-chip">${t}</span>`).join('');
