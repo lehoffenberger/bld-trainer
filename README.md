@@ -33,7 +33,7 @@ You don't need an account, and the app doesn't save any of your data. Updates in
 ### Three branches
 
 - **Scramble**: scramble a solved cube using letter pairs.
-- **Memorize**: trace the scramble and type your pairs. Each pair is checked as you type it.
+- **Memorize**: trace the scramble and type your pairs. Each pair is checked as you type it. Afterward you can test yourself: type the pairs from memory with the cube hidden.
 - **Execute**: solve your cube, timed or not, then step through the solution.
 
 ### Speffz lettering

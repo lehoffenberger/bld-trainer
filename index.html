@@ -94,7 +94,12 @@
   .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 
   .settings-cols{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:22px; }
-  .setup-head{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .setup-banner{ display:flex; flex-wrap:wrap; gap:5px; width:100%; background:none; border:none; padding:0;
+    margin:0 0 12px; text-align:left; font-weight:400; cursor:pointer; }
+  .setup-banner:hover{ filter:none; }
+  .setup-banner:hover .sum-chip{ border-color:var(--border-strong); }
+  #setupPanel[hidden]{ display:none; }
+  #setupPanel{ margin-bottom:4px; }
   .setup-summary{ flex:1; min-width:150px; display:flex; flex-wrap:wrap; gap:5px; }
   .sum-chip{ font-size:.74rem; color:var(--text-dim); background:var(--surface-2); border:1px solid var(--border);
     border-radius:100px; padding:2px 9px; white-space:nowrap; }
@@ -132,6 +137,8 @@
 
   main.layout{ display:grid; grid-template-columns:minmax(300px,420px) 1fr; gap:18px; margin-top:16px; align-items:start; }
   body:not([data-mode="home"]) #scramblePanel{ display:none; }
+  body[data-mode="memotest"] main.layout > .stack:first-child{ display:none; }
+  body[data-mode="memotest"] main.layout{ grid-template-columns:1fr; max-width:720px; }
   .viz-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
   button.chip-btn{ font-family:"IBM Plex Mono",monospace; font-size:.72rem; font-weight:600; padding:5px 10px; min-height:32px; }
   button.chip-btn[aria-pressed="true"]{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
@@ -267,26 +274,23 @@
 <body>
 
 
+<button class="setup-banner" id="setupSummary" title="Open Setup"></button>
 <header class="top">
   <div>
     <h1><span class="t-full">Rubik's Cube 3x3 Blindfold Practice Tool</span><span class="t-short">BLD Trainer</span></h1>
     <div class="tag">Guided Scrambling, Memorization, and Execution Trainer</div>
   </div>
   <div class="row" style="gap:8px;">
-    <button id="infoBtn">Guide</button>
     <span class="phase-pill" id="phasePill">setup</span>
+    <button class="disclosure" id="setupToggle" aria-expanded="false" aria-controls="setupPanel"><span class="chev">&#9656;</span> Setup</button>
+    <button id="infoBtn">Guide</button>
   </div>
 </header>
 
 <div id="docsOverlay" hidden><div class="docs" id="docsBody"></div></div>
 
-<section class="panel stack" id="setupPanel">
-  <div class="setup-head">
-    <button class="disclosure" id="setupToggle" aria-expanded="false"><span class="chev">&#9656;</span> Setup</button>
-    <div class="setup-summary" id="setupSummary"></div>
-  </div>
-  <div class="stack" id="setupBody" hidden>
-    <hr class="divider">
+<section class="panel stack" id="setupPanel" hidden>
+  <div class="stack" id="setupBody">
     <div class="settings-section">
       <div class="sec-title">Scramble</div>
       <div class="row">
@@ -345,6 +349,7 @@
     </div>
       </div>
   </div>
+  <div class="row" style="justify-content:flex-end;"><button class="primary" id="setupDone">Done</button></div>
 </section>
 
 <main class="layout">
@@ -1106,11 +1111,11 @@ function pinViz(){            // on phones, start each screen with the cube at t
 }
 function render(){
   document.body.dataset.mode = app.mode;
-  phasePill.textContent = { home:'setup', memo:'memo', exec:'execution', scramble:'scrambling', review:'review' }[app.mode];
+  phasePill.textContent = { home:'', memo:'memo', memotest:'memo test', exec:'execution', scramble:'scrambling', review:'review' }[app.mode];
   scrambleLine.textContent = app.scramble || '—';
   syncHistoryUI();
   renderViz();
-  ({ home:renderHome, memo:renderMemo, exec:renderExec, scramble:renderScrambleMode, review:renderReview })[app.mode]();
+  ({ home:renderHome, memo:renderMemo, memotest:renderMemoTest, exec:renderExec, scramble:renderScrambleMode, review:renderReview })[app.mode]();
 }
 function cubeSVG(step){
   const facelets = colorsFromOccupants(step.occC, step.occE);
@@ -1225,11 +1230,14 @@ function renderMemo(){
     const total = staged ? app.times.memoEdge + app.times.memoCorner : app.times.memo;
     html += `<div class="hint">Memo complete${memoTimed.checked ? ` \u2014 total ${fmt(total)}` : ''}.</div>
       <hr class="divider"><div class="row">
-        <button class="primary" id="memoToExec">Execute this scramble</button>
+        <button class="primary" id="memoTest">Test my memo</button>
+        <button id="memoToExec">Execute this scramble</button>
         <button id="memoReview">Review solution</button>
         <button class="ghost" id="memoNext">Next scramble</button>
-      </div>`;
+      </div>
+      <div class="legend" style="margin-top:8px;">The test hides the cube and asks for your pairs from memory.</div>`;
     modePanel.innerHTML = html;
+    $('memoTest').onclick = enterMemoTest;
     $('memoToExec').onclick = enterExec; $('memoReview').onclick = enterReview; $('memoNext').onclick = newScramble;
     return;
   }
@@ -1279,6 +1287,102 @@ function renderMemo(){
   $('memoFinish').onclick = () => { stopTimer(); app.memoDone = true; render(); };
   $('memoReveal').onclick = () => { app.memoReveal = !app.memoReveal; render(); };
   $('memoAbort').onclick = goHome;
+}
+
+/* ---------- memo test: type the pairs from memory, cube hidden, checked all at once ---------- */
+function enterMemoTest(){
+  stopTimer();
+  app.mode = 'memotest'; app.testText = {corner:'', edge:''}; app.testChecked = false;
+  render(); window.scrollTo(0, 0);
+  const first = $(`test-${groupOrder()[0]}`); if (first) first.focus({preventScroll:true});
+}
+const letterPairs = (text, ref) => {
+  let L = (text || '').toUpperCase().replace(/[^A-Z]/g, '');
+  if (ref && L.length % 2 && L.endsWith(ref)) L = L.slice(0, -1);   // an optional closing buffer letter
+  const out = []; for (let i = 0; i < L.length; i += 2) out.push(L.slice(i, i+2));
+  return out;
+};
+/* what you're tested on: the pairs you derived, if they solved the group; otherwise the app's */
+function memoAnswer(kind){
+  const ref = refLetter(GROUPS[kind], bufPos(kind));
+  const mine = app.entryText[kind] || '';
+  if (mine.trim() && validateEntry(kind, mine).solved) return { pairs: letterPairs(mine, ref), source: 'yours' };
+  return { pairs: letterPairs(app.sol[kind].targets.join('')), source: 'app' };
+}
+/* line up recalled pairs with the right ones (edit-distance alignment), so one skipped or
+   extra pair counts as one mistake instead of shifting everything after it */
+function alignPairs(ans, got){
+  const n = ans.length, m = got.length;
+  const D = Array.from({length:n+1}, (_, i) => Array.from({length:m+1}, (_, j) => i + j));
+  for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++)
+    D[i][j] = Math.min(D[i-1][j-1] + (ans[i-1] === got[j-1] ? 0 : 1), D[i-1][j] + 1, D[i][j-1] + 1);
+  const out = []; let i = n, j = m;
+  while (i > 0 || j > 0){
+    if (i > 0 && j > 0 && D[i][j] === D[i-1][j-1] + (ans[i-1] === got[j-1] ? 0 : 1)){ out.push([ans[i-1], got[j-1]]); i--; j--; }
+    else if (i > 0 && D[i][j] === D[i-1][j] + 1){ out.push([ans[i-1], undefined]); i--; }
+    else { out.push([undefined, got[j-1]]); j--; }
+  }
+  return out.reverse();
+}
+function testResultHTML(kind){
+  const ans = memoAnswer(kind).pairs;
+  const got = letterPairs(app.testText[kind], refLetter(GROUPS[kind], bufPos(kind)));
+  let right = 0, chips = '';
+  for (const [a, g] of alignPairs(ans, got)){
+    if (a && g === a){ right++; chips += `<span class="pair-chip good">${g}</span>`; }
+    else if (a && g)  chips += `<span class="pair-chip bad">${g}<span class="chip-tag">${a}</span></span>`;
+    else if (a)       chips += `<span class="pair-chip bad">\u2013<span class="chip-tag">${a}</span></span>`;
+    else              chips += `<span class="pair-chip bad">${g}<span class="chip-tag">extra</span></span>`;
+  }
+  const extra = alignPairs(ans, got).filter(([a]) => a === undefined).length;
+  const perfect = right === ans.length && extra === 0;
+  return `<div class="pairs-display">${chips}</div>
+    <div class="status ${perfect ? 'good' : 'bad'}">${perfect ? '\u2713 ' : ''}${right} / ${ans.length} pairs right${extra ? `, ${extra} extra` : ''}.</div>`;
+}
+function renderMemoTest(){
+  const order = groupOrder(), checked = app.testChecked;
+  let html = `<h3>Memo test</h3>
+    <div class="legend">Type your pairs from memory. Nothing is checked until you press Check.</div>`;
+  for (const k of order){
+    html += `<div class="entry-block" style="margin-top:6px;">
+      <div class="grp">${kindName(k)}</div>
+      <input type="text" class="mono entry-input" id="test-${k}" autocapitalize="characters" autocorrect="off" autocomplete="off"
+        spellcheck="false" enterkeyhint="${k === order[order.length-1] ? 'done' : 'next'}" placeholder="pairs from memory \u2026"
+        value="${app.testText[k]}" ${checked ? 'readonly' : ''}>
+      ${checked ? testResultHTML(k) : ''}</div>`;
+  }
+  if (checked){
+    const src = order.map(k => memoAnswer(k).source);
+    html += `<div class="legend" style="margin-top:8px;">Wrong pairs show the right one in small text. Checked against ${
+      src.every(x => x === 'yours') ? 'the pairs you derived' : src.every(x => x === 'app') ? 'the app\u2019s solution' : 'the pairs you derived where you finished a group, otherwise the app\u2019s solution'}.</div>
+      <hr class="divider"><div class="row">
+        <button class="primary" id="testToExec">Execute this scramble</button>
+        <button id="testRetry">Try again</button>
+        <button id="testReview">Review solution</button>
+        <button class="ghost" id="testNext">Next scramble</button></div>`;
+  } else {
+    html += `<hr class="divider"><div class="row">
+        <button class="primary" id="testCheck">Check</button>
+        <button id="testSkip">Skip to execution</button>
+        <button class="ghost" id="testBack">Back</button></div>`;
+  }
+  modePanel.innerHTML = html;
+  order.forEach((k, i) => {
+    const el = $(`test-${k}`);
+    el.addEventListener('input', () => { app.testText[k] = el.value; });
+    el.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || checked) return;
+      e.preventDefault();
+      if (i < order.length - 1) $(`test-${order[i+1]}`).focus(); else $('testCheck').click();
+    });
+  });
+  if ($('testCheck')) $('testCheck').onclick = () => { app.testChecked = true; render(); };
+  if ($('testSkip')) $('testSkip').onclick = enterExec;
+  if ($('testBack')) $('testBack').onclick = () => { app.mode = 'memo'; render(); };
+  if ($('testToExec')) $('testToExec').onclick = enterExec;
+  if ($('testRetry')) $('testRetry').onclick = enterMemoTest;
+  if ($('testReview')) $('testReview').onclick = enterReview;
+  if ($('testNext')) $('testNext').onclick = newScramble;
 }
 
 function enterExec(){
@@ -1575,7 +1679,7 @@ function docsHTML(){
   <h3 id="sec-start">Three branches</h3>
   <ul>
     <li><b>Scramble</b> — scramble a solved cube using letter pairs for practice.</li>
-    <li><b>Memorize</b> — pairs hidden (derive) or shown (memorise), edges and corners side by side, timed per group or together.</li>
+    <li><b>Memorize</b> — pairs hidden (derive) or shown (memorise), edges and corners side by side, timed per group or together. Afterward you can test yourself: type the pairs from memory with the cube hidden.</li>
     <li><b>Execute</b> — pairs hidden or shown, timed or not; solve your physical cube.</li>
   </ul>
   <p>Flow: Scramble &rarr; Memorize &rarr; Execute.</p>
@@ -1726,11 +1830,14 @@ function updateSetupSummary(){
     orderSel.value==='edges' ? 'Edges first' : 'Corners first'
   ].map(t => `<span class="sum-chip">${t}</span>`).join('');
 }
-$('setupToggle').onclick = () => {
-  const body = $('setupBody'), open = body.hidden;
-  body.hidden = !open;
+function setSetupOpen(open){
+  $('setupPanel').hidden = !open;
   $('setupToggle').setAttribute('aria-expanded', String(open));
-};
+  if (open) $('setupPanel').scrollIntoView({block:'nearest'});
+}
+$('setupToggle').onclick = () => setSetupOpen($('setupPanel').hidden);
+$('setupSummary').onclick = () => setSetupOpen(true);
+$('setupDone').onclick = () => { setSetupOpen(false); window.scrollTo({top:0}); };
 $('prevScrambleBtn').onclick = prevScramble;
 $('nextScrambleBtn').onclick = nextScramble;
 $('newScrambleBtn').onclick = newScramble;
