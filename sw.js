@@ -1,6 +1,6 @@
 // Offline support. The app shell is cached on install; every launch serves the cached copy
 // instantly and refreshes it in the background, so an update shows up on the next launch.
-const CACHE = 'bld-trainer-v18';
+const CACHE = 'bld-trainer-v19';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'];
 
