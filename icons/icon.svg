@@ -5,10 +5,10 @@
  <filter id="glow2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
 <rect width="512" height="512" fill="url(#bg)"/>
-<g transform="translate(256 256) scale(0.8) translate(-250 -241.5)">
- <g filter="url(#glow2)"><rect x="65" y="51.5" width="100" height="100" rx="18" fill="#fff23a"/><rect x="65" y="191.5" width="100" height="100" rx="18" fill="#1f9bff"/><rect x="65" y="331.5" width="100" height="100" rx="18" fill="#ff2b4e"/></g>
+<g transform="translate(256 256) scale(0.92) translate(-262 -256)">
+ <g filter="url(#glow2)"><rect x="96" y="98" width="92" height="92" rx="17" fill="#fff23a"/><rect x="96" y="210" width="92" height="92" rx="17" fill="#1f9bff"/><rect x="96" y="322" width="92" height="92" rx="17" fill="#ff2b4e"/></g>
  <g filter="url(#glow)" fill="none" stroke="#b36bff" stroke-width="9" stroke-linejoin="round" stroke-linecap="round">
-  <path d="m406.334 241.663c4.929-76.658 73.935-190.163-58.733-190.163-111.138 0-118.596 96.192-118.596 190.163 0 84.969 4.044 186.586 106.526 190.163 142.872 4.987 76.281-104.974 70.803-190.163z" fill="#1a0f33"/>
-  <path d="M284 236 Q 322 266, 360 236 M295.4 243.6 l-12 13 M322.0 251.0 l0 18 M348.6 243.6 l12 13" stroke-width="7"/>
+  <path d="M232 98 H 318 C 378 98, 410 132, 410 178 C 410 214, 392 240, 362 256 C 402 270, 428 302, 428 342 C 428 388, 392 414, 330 414 H 232 Q 212 414 212 394 V 118 Q 212 98 232 98 Z" fill="#1a0f33"/>
+  <path d="M276 170 Q 306 192, 336 170 M285.0 175.6 l-9 10 M306.0 181.0 l0 14 M327.0 175.6 l9 10 M286 328 Q 316 350, 346 328 M295.0 333.6 l-9 10 M316.0 339.0 l0 14 M337.0 333.6 l9 10" stroke-width="6"/>
  </g>
 </g></svg>
